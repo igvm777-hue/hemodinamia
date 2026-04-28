@@ -1229,26 +1229,59 @@
 
 
     <style id="ajuste-responsive-ipad-10">
+        :root {
+            --header-offset: 92px;
+        }
+
+        .sidebar-toggle-btn {
+            display: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            border: 1px solid rgba(0,85,165,.14);
+            background: linear-gradient(180deg,#ffffff,#f3f8ff);
+            color: #0055a5;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 24px rgba(0,45,114,.10);
+            cursor: pointer;
+            transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+            flex-shrink: 0;
+        }
+        .sidebar-toggle-btn:hover,
+        .sidebar-toggle-btn:focus-visible {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 28px rgba(0,85,165,.18);
+            background: #ffffff;
+            outline: none;
+        }
+        .sidebar-backdrop {
+            display: none;
+        }
+
         /* ==========================================================
            AJUSTE RESPONSIVO PARA iPad 10 / TABLETS
-           Mantiene el diseño de escritorio en laptop/monitor y evita
-           que iPad vertical se comprima como si fuera pantalla desktop.
+           Mantiene el menú vertical dentro de un panel lateral ocultable.
         ========================================================== */
         @media (max-width: 1180px) {
             html,
             body {
                 height: auto !important;
                 min-height: 100vh !important;
-                overflow: auto !important;
             }
 
             body {
-                display: block !important;
+                overflow-x: hidden !important;
+                overflow-y: auto !important;
+            }
+
+            body.sidebar-open {
+                overflow: hidden !important;
             }
 
             header {
                 position: relative !important;
-                z-index: 90 !important;
+                z-index: 170 !important;
             }
 
             header .w-full {
@@ -1261,47 +1294,87 @@
                 max-width: 180px !important;
             }
 
+            .sidebar-toggle-btn {
+                display: inline-flex !important;
+            }
+
             .layout-wrapper {
-                display: flex !important;
-                flex-direction: column !important;
+                display: block !important;
+                flex: 1 1 auto !important;
                 overflow: visible !important;
                 min-height: auto !important;
             }
 
             .sidebar {
-                width: 100% !important;
-                max-width: 100% !important;
+                width: min(320px, 86vw) !important;
+                max-width: 86vw !important;
                 min-width: 0 !important;
-                flex-direction: row !important;
-                overflow-x: auto !important;
-                overflow-y: hidden !important;
-                padding: 10px 12px !important;
-                position: sticky !important;
-                top: 0 !important;
-                z-index: 80 !important;
-                border-right: none !important;
-                border-bottom: 1px solid var(--ha-border) !important;
-                box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08) !important;
+                flex-direction: column !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                padding: 16px 12px 24px 12px !important;
+                position: fixed !important;
+                top: var(--header-offset) !important;
+                left: 0 !important;
+                height: calc(100vh - var(--header-offset)) !important;
+                z-index: 150 !important;
+                border-right: 1px solid #d8dde6 !important;
+                border-bottom: none !important;
+                box-shadow: 0 18px 48px rgba(15, 23, 42, 0.18) !important;
                 -webkit-overflow-scrolling: touch !important;
+                transform: translateX(-108%) !important;
+                transition: transform .28s ease !important;
+            }
+
+            .sidebar.open {
+                transform: translateX(0) !important;
+            }
+
+            .sidebar-backdrop {
+                display: block;
+                position: fixed;
+                inset: 0;
+                background: rgba(15, 23, 42, 0.38);
+                backdrop-filter: blur(3px);
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+                transition: opacity .24s ease, visibility .24s ease;
+                z-index: 140;
+            }
+
+            .sidebar-backdrop.show {
+                opacity: 1;
+                visibility: visible;
+                pointer-events: auto;
             }
 
             .sidebar .nav-group-title,
             .sidebar .nav-divider {
-                display: none !important;
+                display: block !important;
+            }
+
+            .nav-group-title {
+                margin: 10px 14px 6px 14px !important;
+            }
+
+            .nav-divider {
+                margin: 8px 12px 10px 12px !important;
             }
 
             .nav-tab {
+                width: 100% !important;
+                min-width: 0 !important;
                 flex: 0 0 auto !important;
-                width: auto !important;
-                min-width: max-content !important;
-                white-space: nowrap !important;
-                margin-right: 8px !important;
-                margin-bottom: 0 !important;
-                padding: 11px 14px !important;
-                font-size: 13px !important;
-                line-height: 1.2 !important;
-                border-radius: 12px !important;
+                white-space: normal !important;
+                margin-right: 0 !important;
+                margin-bottom: 8px !important;
+                padding: 14px 16px !important;
+                font-size: 14px !important;
+                line-height: 1.25 !important;
+                border-radius: 14px !important;
                 transform: none !important;
+                text-align: left !important;
             }
 
             .nav-tab:hover,
@@ -1310,8 +1383,9 @@
             }
 
             .nav-tab i {
-                margin-right: 8px !important;
-                width: auto !important;
+                width: 22px !important;
+                text-align: center !important;
+                margin-right: 10px !important;
                 font-size: 14px !important;
             }
 
@@ -1439,69 +1513,7 @@
             }
         }
 
-        /* iPad 10 en horizontal: mantiene menú superior y aprovecha mejor el ancho */
         @media (min-width: 1024px) and (max-width: 1180px) {
-            html,
-            body {
-                height: auto !important;
-                min-height: 100vh !important;
-                overflow: auto !important;
-            }
-
-            body {
-                display: block !important;
-            }
-
-            .layout-wrapper {
-                flex-direction: column !important;
-                overflow: visible !important;
-            }
-
-            .sidebar {
-                width: 100% !important;
-                max-width: 100% !important;
-                min-width: 0 !important;
-                flex-direction: row !important;
-                overflow-x: auto !important;
-                overflow-y: hidden !important;
-                padding: 10px 14px !important;
-                position: sticky !important;
-                top: 0 !important;
-                z-index: 80 !important;
-                border-right: none !important;
-                border-bottom: 1px solid var(--ha-border) !important;
-                box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08) !important;
-                -webkit-overflow-scrolling: touch !important;
-            }
-
-            .sidebar .nav-group-title,
-            .sidebar .nav-divider {
-                display: none !important;
-            }
-
-            .nav-tab {
-                flex: 0 0 auto !important;
-                width: auto !important;
-                min-width: max-content !important;
-                white-space: nowrap !important;
-                margin-right: 8px !important;
-                margin-bottom: 0 !important;
-                padding: 12px 15px !important;
-                font-size: 13px !important;
-                transform: none !important;
-            }
-
-            .nav-tab:hover,
-            .nav-tab.tab-active {
-                transform: none !important;
-            }
-
-            .main-content {
-                width: 100% !important;
-                padding: 1rem !important;
-                overflow: visible !important;
-            }
-
             .metric-strip,
             .urgent-grid-2,
             .urgent-grid-3,
@@ -1517,13 +1529,25 @@
                 grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             }
 
-            .section-shell {
-                padding: 18px !important;
-            }
-
             .chart-container {
                 height: 280px !important;
                 min-height: 260px !important;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .sidebar {
+                width: min(320px, 92vw) !important;
+                max-width: 92vw !important;
+            }
+
+            .metric-strip,
+            .urgent-grid-2,
+            .urgent-grid-3,
+            .quality-shortcuts,
+            .predictive-detail-grid,
+            .proposal-badge-modal-grid {
+                grid-template-columns: 1fr !important;
             }
         }
     </style>
@@ -1535,7 +1559,8 @@
         <div class="institutional-ribbon"></div>
         <div class="w-full px-4 md:px-8 py-3 flex flex-wrap justify-between items-center gap-4">
             
-            <div class="flex items-center gap-5">
+            <div class="flex items-center gap-3 md:gap-5">
+                <button type="button" id="sidebar-toggle-btn" class="sidebar-toggle-btn" onclick="toggleSidebarMenu()" aria-label="Abrir menú" aria-expanded="false"><i class="fas fa-bars"></i></button>
                 <img src="https://grupovazol.com/wp-content/uploads/2025/06/logo-hospital-angeles.png" alt="Hospital Ángeles" class="h-14 md:h-[70px] object-contain hover:scale-105 transition-transform duration-300" onerror="this.src='https://via.placeholder.com/200x60?text=Logo';">
                 <div class="hidden sm:block border-l-2 border-gray-200 pl-5">
                     <h1 class="text-lg md:text-2xl page-title leading-tight">Tablero de hemodinamia</h1>
@@ -1585,7 +1610,8 @@
     <div class="layout-wrapper">
         
         
-        <aside class="sidebar custom-scrollbar">
+        <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="closeSidebarMenu()"></div>
+        <aside id="app-sidebar" class="sidebar custom-scrollbar">
             <div class="nav-group-title hidden md:block">Resumen y operación</div>
             <button onclick="showTab('dashboard')" id="tab-dashboard" class="nav-tab tab-active"><i class="fas fa-chart-pie"></i> Inicio / Resumen Ejecutivo</button>
             <button onclick="showTab('calidad')" id="tab-calidad" class="nav-tab"><i class="fas fa-shield-alt"></i> Indicadores de Calidad</button>
@@ -5108,6 +5134,61 @@ function openPredictiveChartPointDetail(datasetLabel, pointLabel, pointValue, is
 
 
         // ================= SISTEMA DE PESTAÑAS =================
+        function esVistaMenuColapsable() {
+            return window.innerWidth <= 1180;
+        }
+
+        function syncSidebarTopOffset() {
+            const header = document.querySelector('header');
+            const headerHeight = header ? Math.ceil(header.getBoundingClientRect().height) : 92;
+            document.documentElement.style.setProperty('--header-offset', `${headerHeight}px`);
+        }
+
+        function openSidebarMenu() {
+            if (!esVistaMenuColapsable()) return;
+            syncSidebarTopOffset();
+            const sidebar = document.getElementById('app-sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            const btn = document.getElementById('sidebar-toggle-btn');
+            if (sidebar) sidebar.classList.add('open');
+            if (backdrop) backdrop.classList.add('show');
+            document.body.classList.add('sidebar-open');
+            if (btn) btn.setAttribute('aria-expanded', 'true');
+        }
+
+        function closeSidebarMenu(force = false) {
+            const sidebar = document.getElementById('app-sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            const btn = document.getElementById('sidebar-toggle-btn');
+            if (sidebar) sidebar.classList.remove('open');
+            if (backdrop) backdrop.classList.remove('show');
+            document.body.classList.remove('sidebar-open');
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+            if (!force) syncSidebarTopOffset();
+        }
+
+        function toggleSidebarMenu() {
+            const sidebar = document.getElementById('app-sidebar');
+            if (!sidebar) return;
+            if (!esVistaMenuColapsable()) return;
+            if (sidebar.classList.contains('open')) closeSidebarMenu();
+            else openSidebarMenu();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            syncSidebarTopOffset();
+            closeSidebarMenu(true);
+        });
+
+        window.addEventListener('resize', () => {
+            syncSidebarTopOffset();
+            if (!esVistaMenuColapsable()) closeSidebarMenu(true);
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') closeSidebarMenu();
+        });
+
         function showTab(tab) {
             try {
                 const sesion = obtenerSesionUsuario();
@@ -5135,6 +5216,7 @@ function openPredictiveChartPointDetail(datasetLabel, pointLabel, pointValue, is
                 registrarEventoAuditoria('NAVEGACION', `Se abrió la sección: ${tab}`);
                 if(tab === 'analisis') renderAnalisisIAPremium();
                 if(['dashboard','calidad','compendio','operacion','tendencias','comparativas','predictivo','hallazgos','recomendaciones','propuestas','cumplimiento'].includes(tab)) { aplicarFiltros(); }
+                if (esVistaMenuColapsable()) closeSidebarMenu(true);
             } catch(err) { console.error("Error cambiando pestaña:", err); }
         }
 
