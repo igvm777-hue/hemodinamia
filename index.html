@@ -1230,22 +1230,22 @@
 
     <style id="ajuste-responsive-ipad-10">
         :root {
-            --header-offset: 92px;
+            --ipad-sidebar-width: 300px;
         }
 
         .sidebar-toggle-btn {
             display: none;
-            width: 44px;
-            height: 44px;
+            width: 46px;
+            height: 46px;
             border-radius: 14px;
-            border: 1px solid rgba(0,85,165,.14);
+            border: 1px solid rgba(0,85,165,.18);
             background: linear-gradient(180deg,#ffffff,#f3f8ff);
             color: #0055a5;
             align-items: center;
             justify-content: center;
             box-shadow: 0 10px 24px rgba(0,45,114,.10);
             cursor: pointer;
-            transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+            transition: transform .2s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
             flex-shrink: 0;
         }
         .sidebar-toggle-btn:hover,
@@ -1255,33 +1255,42 @@
             background: #ffffff;
             outline: none;
         }
+        .sidebar-toggle-btn i {
+            font-size: 18px;
+            transition: transform .2s ease;
+        }
+        body.sidebar-open .sidebar-toggle-btn {
+            background: linear-gradient(135deg,#0d58aa,#002d72);
+            color: #ffffff;
+        }
+        body.sidebar-open .sidebar-toggle-btn i {
+            transform: rotate(90deg);
+        }
         .sidebar-backdrop {
-            display: none;
+            display: none !important;
         }
 
         /* ==========================================================
-           AJUSTE RESPONSIVO PARA iPad 10 / TABLETS
-           Mantiene el menú vertical dentro de un panel lateral ocultable.
+           iPad / tablet: menú vertical como escritorio, pero colapsable
+           con botón. Cuando se abre, empuja el contenido como en la imagen.
         ========================================================== */
         @media (max-width: 1180px) {
             html,
             body {
-                height: auto !important;
+                height: 100vh !important;
                 min-height: 100vh !important;
-            }
-
-            body {
-                overflow-x: hidden !important;
-                overflow-y: auto !important;
-            }
-
-            body.sidebar-open {
                 overflow: hidden !important;
             }
 
+            body {
+                display: flex !important;
+                flex-direction: column !important;
+            }
+
             header {
+                flex-shrink: 0 !important;
                 position: relative !important;
-                z-index: 170 !important;
+                z-index: 90 !important;
             }
 
             header .w-full {
@@ -1290,8 +1299,8 @@
             }
 
             header img {
-                height: 56px !important;
-                max-width: 180px !important;
+                height: 58px !important;
+                max-width: 182px !important;
             }
 
             .sidebar-toggle-btn {
@@ -1299,54 +1308,49 @@
             }
 
             .layout-wrapper {
-                display: block !important;
                 flex: 1 1 auto !important;
-                overflow: visible !important;
-                min-height: auto !important;
+                min-height: 0 !important;
+                display: flex !important;
+                flex-direction: row !important;
+                overflow: hidden !important;
+                position: relative !important;
             }
 
             .sidebar {
-                width: min(320px, 86vw) !important;
-                max-width: 86vw !important;
+                width: var(--ipad-sidebar-width) !important;
+                flex: 0 0 var(--ipad-sidebar-width) !important;
                 min-width: 0 !important;
+                max-width: var(--ipad-sidebar-width) !important;
+                height: 100% !important;
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
+                transform: none !important;
+                opacity: 1 !important;
+                display: flex !important;
                 flex-direction: column !important;
                 overflow-y: auto !important;
                 overflow-x: hidden !important;
-                padding: 16px 12px 24px 12px !important;
-                position: fixed !important;
-                top: var(--header-offset) !important;
-                left: 0 !important;
-                height: calc(100vh - var(--header-offset)) !important;
-                z-index: 150 !important;
+                padding: 18px 14px 22px 14px !important;
+                z-index: 30 !important;
+                background: #f3f4f6 !important;
                 border-right: 1px solid #d8dde6 !important;
                 border-bottom: none !important;
-                box-shadow: 0 18px 48px rgba(15, 23, 42, 0.18) !important;
+                box-shadow: none !important;
                 -webkit-overflow-scrolling: touch !important;
-                transform: translateX(-108%) !important;
-                transition: transform .28s ease !important;
+                transition: flex-basis .28s ease, width .28s ease, max-width .28s ease, padding .28s ease, opacity .18s ease !important;
             }
 
-            .sidebar.open {
-                transform: translateX(0) !important;
-            }
-
-            .sidebar-backdrop {
-                display: block;
-                position: fixed;
-                inset: 0;
-                background: rgba(15, 23, 42, 0.38);
-                backdrop-filter: blur(3px);
-                opacity: 0;
-                visibility: hidden;
-                pointer-events: none;
-                transition: opacity .24s ease, visibility .24s ease;
-                z-index: 140;
-            }
-
-            .sidebar-backdrop.show {
-                opacity: 1;
-                visibility: visible;
-                pointer-events: auto;
+            body:not(.sidebar-open) .sidebar {
+                width: 0 !important;
+                flex-basis: 0 !important;
+                max-width: 0 !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                border-right: 0 !important;
+                opacity: 0 !important;
+                overflow: hidden !important;
+                pointer-events: none !important;
             }
 
             .sidebar .nav-group-title,
@@ -1356,6 +1360,8 @@
 
             .nav-group-title {
                 margin: 10px 14px 6px 14px !important;
+                font-size: 11px !important;
+                letter-spacing: .14em !important;
             }
 
             .nav-divider {
@@ -1368,10 +1374,10 @@
                 flex: 0 0 auto !important;
                 white-space: normal !important;
                 margin-right: 0 !important;
-                margin-bottom: 8px !important;
+                margin-bottom: 6px !important;
                 padding: 14px 16px !important;
-                font-size: 14px !important;
-                line-height: 1.25 !important;
+                font-size: 15px !important;
+                line-height: 1.2 !important;
                 border-radius: 14px !important;
                 transform: none !important;
                 text-align: left !important;
@@ -1383,16 +1389,20 @@
             }
 
             .nav-tab i {
-                width: 22px !important;
+                width: 24px !important;
                 text-align: center !important;
-                margin-right: 10px !important;
-                font-size: 14px !important;
+                margin-right: 12px !important;
+                font-size: 15px !important;
             }
 
             .main-content {
-                width: 100% !important;
-                padding: 1rem !important;
-                overflow: visible !important;
+                flex: 1 1 auto !important;
+                min-width: 0 !important;
+                width: auto !important;
+                padding: 1.25rem !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                -webkit-overflow-scrolling: touch !important;
             }
 
             .max-w-7xl {
@@ -1424,19 +1434,16 @@
             .metric-strip,
             .urgent-grid-2,
             .urgent-grid-3,
-            .quality-shortcuts,
-            .predictive-detail-grid,
-            .proposal-badge-modal-grid {
-                grid-template-columns: 1fr !important;
+            .quality-shortcuts {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             }
 
-            .grid.grid-cols-1,
             .grid.md\:grid-cols-2,
             .grid.lg\:grid-cols-2,
             .grid.lg\:grid-cols-3,
             .grid.lg\:grid-cols-4,
             .grid.xl\:grid-cols-4 {
-                grid-template-columns: 1fr !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             }
 
             .coverage-banner {
@@ -1460,8 +1467,8 @@
             }
 
             .chart-container {
-                height: 260px !important;
-                min-height: 240px !important;
+                height: 280px !important;
+                min-height: 260px !important;
             }
 
             canvas {
@@ -1513,32 +1520,24 @@
             }
         }
 
-        @media (min-width: 1024px) and (max-width: 1180px) {
-            .metric-strip,
-            .urgent-grid-2,
-            .urgent-grid-3,
-            .quality-shortcuts {
-                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-            }
-
-            .grid.md\:grid-cols-2,
-            .grid.lg\:grid-cols-2,
-            .grid.lg\:grid-cols-3,
-            .grid.lg\:grid-cols-4,
-            .grid.xl\:grid-cols-4 {
-                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-            }
-
-            .chart-container {
-                height: 280px !important;
-                min-height: 260px !important;
-            }
-        }
-
+        /* Teléfono o pantalla muy angosta: se conserva el panel lateral, pero más compacto */
         @media (max-width: 760px) {
-            .sidebar {
-                width: min(320px, 92vw) !important;
-                max-width: 92vw !important;
+            :root {
+                --ipad-sidebar-width: 286px;
+            }
+
+            header img {
+                height: 50px !important;
+                max-width: 158px !important;
+            }
+
+            .sidebar-toggle-btn {
+                width: 42px;
+                height: 42px;
+            }
+
+            .main-content {
+                padding: 1rem !important;
             }
 
             .metric-strip,
@@ -1548,6 +1547,19 @@
             .predictive-detail-grid,
             .proposal-badge-modal-grid {
                 grid-template-columns: 1fr !important;
+            }
+
+            .grid.md\:grid-cols-2,
+            .grid.lg\:grid-cols-2,
+            .grid.lg\:grid-cols-3,
+            .grid.lg\:grid-cols-4,
+            .grid.xl\:grid-cols-4 {
+                grid-template-columns: 1fr !important;
+            }
+
+            .chart-container {
+                height: 260px !important;
+                min-height: 240px !important;
             }
         }
     </style>
@@ -1610,7 +1622,6 @@
     <div class="layout-wrapper">
         
         
-        <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="closeSidebarMenu()"></div>
         <aside id="app-sidebar" class="sidebar custom-scrollbar">
             <div class="nav-group-title hidden md:block">Resumen y operación</div>
             <button onclick="showTab('dashboard')" id="tab-dashboard" class="nav-tab tab-active"><i class="fas fa-chart-pie"></i> Inicio / Resumen Ejecutivo</button>
@@ -5138,55 +5149,39 @@ function openPredictiveChartPointDetail(datasetLabel, pointLabel, pointValue, is
             return window.innerWidth <= 1180;
         }
 
-        function syncSidebarTopOffset() {
-            const header = document.querySelector('header');
-            const headerHeight = header ? Math.ceil(header.getBoundingClientRect().height) : 92;
-            document.documentElement.style.setProperty('--header-offset', `${headerHeight}px`);
-        }
-
         function openSidebarMenu() {
             if (!esVistaMenuColapsable()) return;
-            syncSidebarTopOffset();
-            const sidebar = document.getElementById('app-sidebar');
-            const backdrop = document.getElementById('sidebar-backdrop');
             const btn = document.getElementById('sidebar-toggle-btn');
-            if (sidebar) sidebar.classList.add('open');
-            if (backdrop) backdrop.classList.add('show');
             document.body.classList.add('sidebar-open');
-            if (btn) btn.setAttribute('aria-expanded', 'true');
+            if (btn) {
+                btn.setAttribute('aria-expanded', 'true');
+                btn.setAttribute('aria-label', 'Cerrar menú');
+            }
         }
 
-        function closeSidebarMenu(force = false) {
-            const sidebar = document.getElementById('app-sidebar');
-            const backdrop = document.getElementById('sidebar-backdrop');
+        function closeSidebarMenu() {
             const btn = document.getElementById('sidebar-toggle-btn');
-            if (sidebar) sidebar.classList.remove('open');
-            if (backdrop) backdrop.classList.remove('show');
             document.body.classList.remove('sidebar-open');
-            if (btn) btn.setAttribute('aria-expanded', 'false');
-            if (!force) syncSidebarTopOffset();
+            if (btn) {
+                btn.setAttribute('aria-expanded', 'false');
+                btn.setAttribute('aria-label', 'Abrir menú');
+            }
         }
 
         function toggleSidebarMenu() {
-            const sidebar = document.getElementById('app-sidebar');
-            if (!sidebar) return;
             if (!esVistaMenuColapsable()) return;
-            if (sidebar.classList.contains('open')) closeSidebarMenu();
+            if (document.body.classList.contains('sidebar-open')) closeSidebarMenu();
             else openSidebarMenu();
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            syncSidebarTopOffset();
-            closeSidebarMenu(true);
+            if (esVistaMenuColapsable()) closeSidebarMenu();
+            else document.body.classList.add('sidebar-open');
         });
 
         window.addEventListener('resize', () => {
-            syncSidebarTopOffset();
-            if (!esVistaMenuColapsable()) closeSidebarMenu(true);
-        });
-
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') closeSidebarMenu();
+            if (!esVistaMenuColapsable()) document.body.classList.add('sidebar-open');
+            else if (!document.body.classList.contains('sidebar-open')) closeSidebarMenu();
         });
 
         function showTab(tab) {
@@ -5216,7 +5211,6 @@ function openPredictiveChartPointDetail(datasetLabel, pointLabel, pointValue, is
                 registrarEventoAuditoria('NAVEGACION', `Se abrió la sección: ${tab}`);
                 if(tab === 'analisis') renderAnalisisIAPremium();
                 if(['dashboard','calidad','compendio','operacion','tendencias','comparativas','predictivo','hallazgos','recomendaciones','propuestas','cumplimiento'].includes(tab)) { aplicarFiltros(); }
-                if (esVistaMenuColapsable()) closeSidebarMenu(true);
             } catch(err) { console.error("Error cambiando pestaña:", err); }
         }
 
