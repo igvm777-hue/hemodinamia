@@ -1234,7 +1234,7 @@
            Mantiene el diseño de escritorio en laptop/monitor y evita
            que iPad vertical se comprima como si fuera pantalla desktop.
         ========================================================== */
-        @media (max-width: 1023px) {
+        @media (max-width: 1180px) {
             html,
             body {
                 height: auto !important;
@@ -1439,30 +1439,91 @@
             }
         }
 
-        /* iPad 10 en horizontal: conserva buen espacio sin apretar tarjetas */
+        /* iPad 10 en horizontal: mantiene menú superior y aprovecha mejor el ancho */
         @media (min-width: 1024px) and (max-width: 1180px) {
+            html,
+            body {
+                height: auto !important;
+                min-height: 100vh !important;
+                overflow: auto !important;
+            }
+
+            body {
+                display: block !important;
+            }
+
+            .layout-wrapper {
+                flex-direction: column !important;
+                overflow: visible !important;
+            }
+
             .sidebar {
-                width: 250px !important;
-                padding: 14px 10px !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                flex-direction: row !important;
+                overflow-x: auto !important;
+                overflow-y: hidden !important;
+                padding: 10px 14px !important;
+                position: sticky !important;
+                top: 0 !important;
+                z-index: 80 !important;
+                border-right: none !important;
+                border-bottom: 1px solid var(--ha-border) !important;
+                box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08) !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+
+            .sidebar .nav-group-title,
+            .sidebar .nav-divider {
+                display: none !important;
             }
 
             .nav-tab {
-                padding: 12px 12px !important;
+                flex: 0 0 auto !important;
+                width: auto !important;
+                min-width: max-content !important;
+                white-space: nowrap !important;
+                margin-right: 8px !important;
+                margin-bottom: 0 !important;
+                padding: 12px 15px !important;
                 font-size: 13px !important;
+                transform: none !important;
+            }
+
+            .nav-tab:hover,
+            .nav-tab.tab-active {
+                transform: none !important;
             }
 
             .main-content {
+                width: 100% !important;
                 padding: 1rem !important;
+                overflow: visible !important;
             }
 
             .metric-strip,
+            .urgent-grid-2,
             .urgent-grid-3,
             .quality-shortcuts {
                 grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             }
 
+            .grid.md\:grid-cols-2,
+            .grid.lg\:grid-cols-2,
+            .grid.lg\:grid-cols-3,
+            .grid.lg\:grid-cols-4,
+            .grid.xl\:grid-cols-4 {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+
+            .section-shell {
+                padding: 18px !important;
+            }
+
             .chart-container {
                 height: 280px !important;
+                min-height: 260px !important;
             }
         }
     </style>
