@@ -6719,7 +6719,11 @@ function jitReplaceJoinedText(xml, replacements) {
 async function crearWordJITPacienteDesdePlantilla(p) {
     if (!window.JSZip || !JIT_AUDITORIA_WORD_BASE64) throw new Error('Plantilla Word no disponible');
     const markers = jitConstruirMarkersPaciente(p);
-    return await jitCrearDocxDesdePlantillaMarkers(markers);
+    const blob = await jitCrearDocxDesdePlantillaMarkers(markers);
+    return await jitAgregarMembreteInstitucional(blob, {
+        titulo: 'Auditoría JIT individual',
+        subtitulo: `Paciente: ${jitTexto(p?.paciente, 'Paciente sin nombre')} · Expediente: ${jitTexto(p?.id, 'N/A')} · Médico: ${jitTexto(p?.medico, 'N/A')}`
+    });
 }
 
 function jitRound1(value) {
@@ -7163,10 +7167,160 @@ async function jitCrearDocxDesdePlantillaMarkers(markers) {
     });
 }
 
+
+
+async function jitAgregarMembreteInstitucional(blob, opcionesEncabezado = {}) {
+    try {
+        if (!blob || !window.JSZip) return blob;
+        const headerLogoB64 = window.EXPORT_V4_HEADER_LOGO_B64 || (window.TEMPLATE_VISUAL_ASSETS && window.TEMPLATE_VISUAL_ASSETS.coverLogo) || '';
+        const footerBandB64 = window.EXPORT_V4_FOOTER_BAND_B64 || '';
+        if (!headerLogoB64 || !footerBandB64) return blob;
+
+        const buffer = blob.arrayBuffer ? await blob.arrayBuffer() : await new Response(blob).arrayBuffer();
+        const zip = await JSZip.loadAsync(buffer);
+        const documentFile = zip.file('word/document.xml');
+        if (!documentFile) return blob;
+
+        const HEADER_REL_ID = 'rIdJITHeaderMembrete';
+        const FOOTER_REL_ID = 'rIdJITFooterMembrete';
+        const HEADER_PART = 'word/headerJITMembrete.xml';
+        const FOOTER_PART = 'word/footerJITMembrete.xml';
+        const HEADER_RELS = 'word/_rels/headerJITMembrete.xml.rels';
+        const FOOTER_RELS = 'word/_rels/footerJITMembrete.xml.rels';
+        const LOGO_MEDIA = 'word/media/jit-header-logo.png';
+        const FOOTER_MEDIA = 'word/media/jit-footer-band.png';
+
+        const NS_W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+        const NS_R = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+        const NS_WP = 'http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing';
+        const NS_A = 'http://schemas.openxmlformats.org/drawingml/2006/main';
+        const NS_PIC = 'http://schemas.openxmlformats.org/drawingml/2006/picture';
+        const NS_REL = 'http://schemas.openxmlformats.org/package/2006/relationships';
+
+        const imageDrawingXml = (relId, cx, cy, docPrId, name) => `
+<w:drawing>
+  <wp:inline distT="0" distB="0" distL="0" distR="0" xmlns:wp="${NS_WP}">
+    <wp:extent cx="${cx}" cy="${cy}"/>
+    <wp:effectExtent l="0" t="0" r="0" b="0"/>
+    <wp:docPr id="${docPrId}" name="${name}"/>
+    <wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="${NS_A}" noChangeAspect="1"/></wp:cNvGraphicFramePr>
+    <a:graphic xmlns:a="${NS_A}">
+      <a:graphicData uri="${NS_PIC}">
+        <pic:pic xmlns:pic="${NS_PIC}">
+          <pic:nvPicPr><pic:cNvPr id="0" name="${name}"/><pic:cNvPicPr/></pic:nvPicPr>
+          <pic:blipFill><a:blip r:embed="${relId}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>
+          <pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>
+        </pic:pic>
+      </a:graphicData>
+    </a:graphic>
+  </wp:inline>
+</w:drawing>`;
+
+        const textoEncabezadoJIT = {
+            titulo: String(opcionesEncabezado?.titulo || ''),
+            subtitulo: String(opcionesEncabezado?.subtitulo || '')
+        };
+        const tituloEncabezadoJIT = jitXmlEscape(textoEncabezadoJIT.titulo);
+        const subtituloEncabezadoJIT = jitXmlEscape(textoEncabezadoJIT.subtitulo);
+        const bloqueTextoEncabezadoJIT = tituloEncabezadoJIT ? `
+  <w:p>
+    <w:pPr><w:jc w:val="left"/><w:spacing w:before="0" w:after="0"/></w:pPr>
+    <w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:b/><w:sz w:val="18"/><w:color w:val="002D72"/></w:rPr><w:t>${tituloEncabezadoJIT}</w:t></w:r>
+  </w:p>
+  ${subtituloEncabezadoJIT ? `<w:p>
+    <w:pPr><w:jc w:val="left"/><w:spacing w:before="0" w:after="0"/></w:pPr>
+    <w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="16"/><w:color w:val="5F7890"/></w:rPr><w:t>${subtituloEncabezadoJIT}</w:t></w:r>
+  </w:p>` : ''}` : '';
+
+        const headerXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:hdr xmlns:w="${NS_W}" xmlns:r="${NS_R}">
+  <w:p>
+    <w:pPr><w:jc w:val="right"/><w:spacing w:before="0" w:after="0"/></w:pPr>
+    <w:r>${imageDrawingXml('rIdJITHeaderLogo', 781050, 781050, 910001, 'Logo institucional Hospital Angeles')}</w:r>
+  </w:p>${bloqueTextoEncabezadoJIT}
+</w:hdr>`;
+
+        const footerXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:ftr xmlns:w="${NS_W}" xmlns:r="${NS_R}">
+  <w:p>
+    <w:pPr><w:jc w:val="right"/><w:spacing w:before="0" w:after="10"/></w:pPr>
+    <w:r><w:rPr><w:sz w:val="16"/><w:color w:val="5F7890"/></w:rPr><w:t>Página </w:t></w:r>
+    <w:r><w:fldChar w:fldCharType="begin"/></w:r>
+    <w:r><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r>
+    <w:r><w:fldChar w:fldCharType="end"/></w:r>
+  </w:p>
+  <w:p>
+    <w:pPr><w:jc w:val="left"/><w:ind w:left="-850"/><w:spacing w:before="0" w:after="0"/></w:pPr>
+    <w:r>${imageDrawingXml('rIdJITFooterBand', 7696200, 361950, 910002, 'Franja institucional Hospital Angeles')}</w:r>
+  </w:p>
+</w:ftr>`;
+
+        zip.file(HEADER_PART, headerXml);
+        zip.file(FOOTER_PART, footerXml);
+        zip.file(LOGO_MEDIA, jitBase64ToUint8Array(headerLogoB64));
+        zip.file(FOOTER_MEDIA, jitBase64ToUint8Array(footerBandB64));
+        zip.file(HEADER_RELS, `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="${NS_REL}"><Relationship Id="rIdJITHeaderLogo" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/jit-header-logo.png"/></Relationships>`);
+        zip.file(FOOTER_RELS, `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="${NS_REL}"><Relationship Id="rIdJITFooterBand" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/jit-footer-band.png"/></Relationships>`);
+
+        const relsPath = 'word/_rels/document.xml.rels';
+        let relsXml = zip.file(relsPath) ? await zip.file(relsPath).async('string') : `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="${NS_REL}"></Relationships>`;
+        relsXml = relsXml.replace(new RegExp(`<Relationship[^>]+Id=["']${HEADER_REL_ID}["'][^>]*/>`, 'g'), '');
+        relsXml = relsXml.replace(new RegExp(`<Relationship[^>]+Id=["']${FOOTER_REL_ID}["'][^>]*/>`, 'g'), '');
+        relsXml = relsXml.replace('</Relationships>', `<Relationship Id="${HEADER_REL_ID}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="headerJITMembrete.xml"/><Relationship Id="${FOOTER_REL_ID}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footerJITMembrete.xml"/></Relationships>`);
+        zip.file(relsPath, relsXml);
+
+        const contentTypesPath = '[Content_Types].xml';
+        let contentTypesXml = zip.file(contentTypesPath) ? await zip.file(contentTypesPath).async('string') : '';
+        if (contentTypesXml) {
+            if (!/Extension="png"/.test(contentTypesXml)) {
+                contentTypesXml = contentTypesXml.replace(/(<Types\b[^>]*>)/, '$1<Default Extension="png" ContentType="image/png"/>');
+            }
+            if (!contentTypesXml.includes('/word/headerJITMembrete.xml')) {
+                contentTypesXml = contentTypesXml.replace('</Types>', '<Override PartName="/word/headerJITMembrete.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/></Types>');
+            }
+            if (!contentTypesXml.includes('/word/footerJITMembrete.xml')) {
+                contentTypesXml = contentTypesXml.replace('</Types>', '<Override PartName="/word/footerJITMembrete.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>');
+            }
+            zip.file(contentTypesPath, contentTypesXml);
+        }
+
+        let documentXml = await documentFile.async('string');
+        if (!/xmlns:r=/.test(documentXml)) {
+            documentXml = documentXml.replace(/<w:document\b/, `<w:document xmlns:r="${NS_R}"`);
+        }
+        const references = `<w:headerReference w:type="default" r:id="${HEADER_REL_ID}"/><w:footerReference w:type="default" r:id="${FOOTER_REL_ID}"/>`;
+        if (/<w:sectPr[\s\S]*?<\/w:sectPr>/.test(documentXml)) {
+            documentXml = documentXml.replace(/<w:sectPr[\s\S]*?<\/w:sectPr>/g, (sect) => {
+                const limpio = sect
+                    .replace(/<w:headerReference\b[^>]*\/>/g, '')
+                    .replace(/<w:footerReference\b[^>]*\/>/g, '');
+                return limpio.replace(/(<w:sectPr\b[^>]*>)/, `$1${references}`);
+            });
+        } else {
+            documentXml = documentXml.replace('</w:body>', `<w:sectPr>${references}<w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1250" w:right="850" w:bottom="980" w:left="850" w:header="240" w:footer="0" w:gutter="0"/></w:sectPr></w:body>`);
+        }
+        zip.file('word/document.xml', documentXml);
+
+        return await zip.generateAsync({
+            type: 'blob',
+            mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            compression: 'DEFLATE'
+        });
+    } catch (error) {
+        console.warn('No se pudo aplicar membrete institucional al Word JIT; se conserva el documento base.', error);
+        return blob;
+    }
+}
+
 async function crearWordJITTodosPacientesDesdePlantilla(pacientes) {
     if (!window.JSZip || !JIT_AUDITORIA_WORD_BASE64) throw new Error('Plantilla Word no disponible');
     const markers = jitConstruirMarkersGlobal(pacientes);
-    return await jitCrearDocxDesdePlantillaMarkers(markers);
+    const metricasGlobalesJIT = jitMetricasAuditoriaGlobal(pacientes);
+    const blob = await jitCrearDocxDesdePlantillaMarkers(markers);
+    return await jitAgregarMembreteInstitucional(blob, {
+        titulo: 'Auditoría JIT global',
+        subtitulo: `${metricasGlobalesJIT.total} pacientes auditados · ${metricasGlobalesJIT.medicos} médicos incluidos · Periodo: ${metricasGlobalesJIT.periodo} · Score promedio: ${metricasGlobalesJIT.promedio}/100`
+    });
 }
 
 
@@ -7228,6 +7382,11 @@ async function exportarJITWordTodosPacientes() {
             const html = crearWordJITTodosPacientesHtml(pacientes);
             if (window.htmlDocx && typeof window.htmlDocx.asBlob === 'function') blob = window.htmlDocx.asBlob(html);
             else blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+            const metricasGlobalesJIT = jitMetricasAuditoriaGlobal(pacientes);
+            blob = await jitAgregarMembreteInstitucional(blob, {
+                titulo: 'Auditoría JIT global',
+                subtitulo: `${metricasGlobalesJIT.total} pacientes auditados · ${metricasGlobalesJIT.medicos} médicos incluidos · Periodo: ${metricasGlobalesJIT.periodo} · Score promedio: ${metricasGlobalesJIT.promedio}/100`
+            });
         }
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
@@ -7264,6 +7423,10 @@ async function exportarJITWord() {
             } else {
                 blob = new Blob(['\ufeff', html], { type: 'application/msword' });
             }
+            blob = await jitAgregarMembreteInstitucional(blob, {
+                titulo: 'Auditoría JIT individual',
+                subtitulo: `Paciente: ${jitTexto(paciente?.paciente, 'Paciente sin nombre')} · Expediente: ${jitTexto(paciente?.id, 'N/A')} · Médico: ${jitTexto(paciente?.medico, 'N/A')}`
+            });
         }
 
         const a = document.createElement('a');
@@ -8681,6 +8844,9 @@ window.exportarResumenIAWord = async function exportarResumenIAWord() {
       .replace(/^_+|_+$/g, '')
       .slice(0, 60) || 'reporte';
   }
+
+  window.EXPORT_V4_HEADER_LOGO_B64 = EXPORT_V4_HEADER_LOGO_B64;
+  window.EXPORT_V4_FOOTER_BAND_B64 = EXPORT_V4_FOOTER_BAND_B64;
 
   function v4Docx() {
     if (!window.docx) throw new Error('docx no está disponible');
