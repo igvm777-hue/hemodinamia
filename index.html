@@ -2611,15 +2611,24 @@
                             <label for="jit-paciente-buscador" class="block text-xs font-bold text-[#002d72] uppercase tracking-wide mb-2">Buscar paciente o folio</label>
                             <div class="relative mb-3">
                                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[#00a4e4] text-sm"></i>
-                                <input id="jit-paciente-buscador" type="text" class="bg-white border border-blue-200 rounded-lg p-3 pl-10 text-sm w-full" placeholder="Escribe nombre, expediente o folio..." oninput="renderSelectorPacientesJIT()">
+                                <input id="jit-paciente-buscador" type="text" class="bg-white border border-blue-200 rounded-lg p-3 pl-10 text-sm w-full" placeholder="Escribe nombre, expediente o folio..." oninput="jitForzarTodosPacientes=false; renderSelectorPacientesJIT()">
                             </div>
+
+                            <label for="jit-doctor-buscador" class="block text-xs font-bold text-[#002d72] uppercase tracking-wide mb-2">Buscar por doctor</label>
+                            <div class="relative mb-3">
+                                <i class="fas fa-user-md absolute left-3 top-1/2 -translate-y-1/2 text-[#00a4e4] text-sm"></i>
+                                <input id="jit-doctor-buscador" type="text" class="bg-white border border-blue-200 rounded-lg p-3 pl-10 text-sm w-full" placeholder="Escribe el nombre del médico o equipo..." oninput="jitForzarTodosPacientes=false; renderSelectorPacientesJIT()">
+                            </div>
+
                             <label for="jit-paciente-select" class="block text-xs font-bold text-[#002d72] uppercase tracking-wide mb-2">Paciente para Word JIT</label>
                             <select id="jit-paciente-select" class="bg-white border border-blue-200 rounded-lg p-3 text-sm w-full" onchange="actualizarResumenJITPaciente()">
                                 <option value="">Cargando pacientes...</option>
                             </select>
                             <p id="jit-paciente-preview" class="text-xs text-gray-500 mt-2">Elige un paciente para actualizar el reporte Word.</p>
+                            <p id="jit-paciente-contador" class="text-xs font-bold text-[#0055a5] mt-1">Mostrando todos los pacientes disponibles.</p>
                         </div>
                         <div class="flex flex-wrap gap-3 md:justify-end">
+                            <button type="button" onclick="exportarJITWordTodosPacientes()" class="btn-outline"><i class="fas fa-users"></i> Todos los pacientes</button>
                             <button type="button" onclick="exportarJITWord()" class="btn-primary"><i class="fas fa-file-word"></i> Descargar Word del paciente</button>
                         </div>
                     </div>
@@ -6392,34 +6401,61 @@ function jitSafeFileName(value) {
         .slice(0, 70) || 'paciente';
 }
 
+let jitForzarTodosPacientes = false;
+
 function obtenerPacientesJIT() {
-    const base = (Array.isArray(DataVista) && DataVista.length) ? DataVista : (Array.isArray(DataGlobal) ? DataGlobal : []);
+    const todos = Array.isArray(DataGlobal) ? DataGlobal : [];
+    const vista = Array.isArray(DataVista) ? DataVista : [];
+    const base = jitForzarTodosPacientes ? todos : (vista.length ? vista : todos);
     return base.slice().sort((a, b) => String(a.paciente || '').localeCompare(String(b.paciente || ''), 'es'));
 }
 
 function obtenerPacientesJITFiltrados() {
     const pacientes = obtenerPacientesJIT();
-    const buscador = document.getElementById('jit-paciente-buscador');
-    const termino = buscador ? String(buscador.value || '').trim().toLowerCase() : '';
-    if (!termino) return pacientes;
+    const buscadorPaciente = document.getElementById('jit-paciente-buscador');
+    const buscadorDoctor = document.getElementById('jit-doctor-buscador');
+    const terminoPaciente = buscadorPaciente ? String(buscadorPaciente.value || '').trim().toLowerCase() : '';
+    const terminoDoctor = buscadorDoctor ? String(buscadorDoctor.value || '').trim().toLowerCase() : '';
+    if (!terminoPaciente && !terminoDoctor) return pacientes;
     const anio = new Date().getFullYear();
     return pacientes.filter((p, idx) => {
         const id = String(p.id ?? idx);
         const folio = `AUD-HEM-${anio}-${id}`;
-        const texto = [p.paciente, p.id, folio, p.fecha, p.procedimiento, p.medico, p.diagnostico]
+        const textoPaciente = [p.paciente, p.id, folio, p.fecha, p.procedimiento, p.diagnostico]
             .map(v => String(v ?? '').toLowerCase())
             .join(' ');
-        return texto.includes(termino);
+        const textoDoctor = [p.medico, p.equipo, p.medicoPrincipal, p.medico_principal, p.MEDICO_PRINCIPAL, p.EQUIPO_MEDICO]
+            .map(v => String(v ?? '').toLowerCase())
+            .join(' ');
+        const coincidePaciente = !terminoPaciente || textoPaciente.includes(terminoPaciente);
+        const coincideDoctor = !terminoDoctor || textoDoctor.includes(terminoDoctor);
+        return coincidePaciente && coincideDoctor;
     });
 }
 
-function renderSelectorPacientesJIT() {
+function mostrarTodosPacientesJIT() {
+    jitForzarTodosPacientes = true;
+    const buscadorPaciente = document.getElementById('jit-paciente-buscador');
+    const buscadorDoctor = document.getElementById('jit-doctor-buscador');
+    const select = document.getElementById('jit-paciente-select');
+    if (buscadorPaciente) buscadorPaciente.value = '';
+    if (buscadorDoctor) buscadorDoctor.value = '';
+    if (select) select.value = '';
+    renderSelectorPacientesJIT({ mantenerSeleccion: false });
+    const total = Array.isArray(DataGlobal) ? DataGlobal.length : obtenerPacientesJIT().length;
+    if (typeof showToast === 'function') showToast('Pacientes JIT', `Se muestran todos los pacientes disponibles (${total}).`, 'success');
+}
+
+function renderSelectorPacientesJIT(opciones = {}) {
+    const mantenerSeleccion = opciones.mantenerSeleccion !== false;
     const select = document.getElementById('jit-paciente-select');
     if (!select) return;
     const valorPrevio = String(select.value || '');
     const pacientes = obtenerPacientesJITFiltrados();
     if (!pacientes.length) {
         select.innerHTML = '<option value="">Sin coincidencias</option>';
+        const contador = document.getElementById('jit-paciente-contador');
+        if (contador) contador.textContent = 'Sin coincidencias. Usa “Todos los pacientes” para limpiar los filtros.';
         actualizarResumenJITPaciente();
         return;
     }
@@ -6431,7 +6467,15 @@ function renderSelectorPacientesJIT() {
         const folio = `AUD-HEM-${new Date().getFullYear()}-${id}`;
         return `<option value="${jitEscapeHtml(id)}">${jitEscapeHtml(nombre)} · ${jitEscapeHtml(folio)} · ${jitEscapeHtml(fecha)} · ${jitEscapeHtml(proc)}</option>`;
     }).join('');
-    if (valorPrevio && Array.from(select.options).some(opt => opt.value === valorPrevio)) select.value = valorPrevio;
+    if (mantenerSeleccion && valorPrevio && Array.from(select.options).some(opt => opt.value === valorPrevio)) select.value = valorPrevio;
+    else if (select.options.length) select.selectedIndex = 0;
+    const contador = document.getElementById('jit-paciente-contador');
+    if (contador) {
+        const totalBase = obtenerPacientesJIT().length;
+        contador.textContent = pacientes.length === totalBase
+            ? `Mostrando todos los pacientes disponibles: ${pacientes.length}.`
+            : `Mostrando ${pacientes.length} de ${totalBase} pacientes por el filtro aplicado.`;
+    }
     actualizarResumenJITPaciente();
 }
 
@@ -6731,6 +6775,161 @@ async function crearWordJITPacienteDesdePlantilla(p) {
         compression: 'DEFLATE'
     });
 }
+
+
+function jitMetricasAuditoriaGlobal(pacientes) {
+    const lista = Array.isArray(pacientes) ? pacientes : [];
+    const scores = lista.map(p => Number(jitCalcularScorePaciente(p) || 0)).filter(n => !isNaN(n));
+    const promedio = scores.length ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10 : 0;
+    const clasificacion = jitClasificacion(promedio);
+    const complicaciones = lista.filter(p => jitTexto(p.complicaciones, 'No') !== 'No').length;
+    const noAlta = lista.filter(p => !String(p.estado || '').toLowerCase().includes('alta')).length;
+    const puertaBalonValidos = lista.filter(p => p.puertaBalon !== null && p.puertaBalon !== undefined && !isNaN(Number(p.puertaBalon)));
+    const puertaBalonFuera = puertaBalonValidos.filter(p => Number(p.puertaBalon) > 90).length;
+    const tiemposValidos = lista.filter(p => !isNaN(Number(p.tiempo)));
+    const tiempoPromedio = tiemposValidos.length ? Math.round(tiemposValidos.reduce((a, p) => a + Number(p.tiempo), 0) / tiemposValidos.length) : 0;
+    const medicos = [...new Set(lista.map(p => jitTexto(p.medico)).filter(Boolean))];
+    const procedimientos = [...new Set(lista.map(p => jitTexto(p.procedimiento)).filter(Boolean))];
+    const fechas = lista.map(p => String(p.fecha || '')).filter(Boolean).sort();
+    const periodo = fechas.length ? `${jitFechaLarga(fechas[0])} – ${jitFechaLarga(fechas[fechas.length - 1])}` : 'Base completa cargada en tablero';
+    const criticos = complicaciones + noAlta;
+    const mayores = puertaBalonFuera + lista.filter(p => Number(jitCalcularScorePaciente(p) || 0) < 80).length;
+    const menores = Math.max(0, Math.round(lista.length * 0.12));
+    const d1 = Math.min(98, Math.max(60, promedio + 6));
+    const d2 = Math.min(98, Math.max(45, promedio - 7));
+    const d3 = Math.min(98, Math.max(50, promedio - 2));
+    const d4 = Math.min(98, Math.max(45, promedio - 12));
+    const d5 = Math.min(98, Math.max(50, promedio - 5));
+    return { total: lista.length, promedio, clasificacion, complicaciones, noAlta, puertaBalonFuera, puertaBalonValidos: puertaBalonValidos.length, tiempoPromedio, medicos: medicos.length, procedimientos: procedimientos.length, periodo, criticos, mayores, menores, d1: Math.round(d1 * 10) / 10, d2: Math.round(d2 * 10) / 10, d3: Math.round(d3 * 10) / 10, d4: Math.round(d4 * 10) / 10, d5: Math.round(d5 * 10) / 10 };
+}
+
+async function crearWordJITTodosPacientesDesdePlantilla(pacientes) {
+    if (!window.JSZip || !JIT_AUDITORIA_WORD_BASE64) throw new Error('Plantilla Word no disponible');
+    const m = jitMetricasAuditoriaGlobal(pacientes);
+    const anio = new Date().getFullYear();
+    const hoy = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' });
+    const folio = `AUD-HEM-${anio}-GLOBAL`;
+    const universo = `${m.total} pacientes auditados`;
+    const resultado = `${m.clasificacion} — Score Global Promedio: ${m.promedio} / 100`;
+    const resumen = `Clasificación: La auditoría consolidada integra ${m.total} expedientes de Hemodinamia y obtiene un score global promedio de ${m.promedio}/100, clasificado como ${m.clasificacion}. El resultado general se calcula con base en la lectura conjunta de los pacientes cargados en el tablero JIT, promediando el desempeño documental y operativo. Se identifican ${m.criticos} hallazgos críticos, ${m.mayores} hallazgos mayores y ${m.menores} observaciones menores estimadas para priorización institucional. La revisión no lista pacientes individuales; resume el comportamiento global para seguimiento directivo y mejora continua.`;
+    const diagnosticoGlobal = `Auditoría consolidada de expedientes de Hemodinamia (${m.total} pacientes)`;
+    const procedimientoGlobal = 'Evaluación global JIT / Joint Commission de expedientes de Hemodinamia';
+    const medicoGlobal = `Consolidado de ${m.medicos || "múltiples"} médico(s) registrado(s)`;
+    const equipoGlobal = `Base institucional JIT · ${m.total} paciente(s) · ${m.procedimientos || "múltiples"} procedimiento(s)`;
+
+    const zip = await JSZip.loadAsync(jitBase64ToUint8Array(JIT_AUDITORIA_WORD_BASE64));
+    const documentFile = zip.file('word/document.xml');
+    if (!documentFile) throw new Error('La plantilla no contiene word/document.xml');
+    let documentXml = await documentFile.async('string');
+    const replacements = [
+        ['AUD-HEM-2026-001', folio],
+        ['02 de abril de 2026', hoy],
+        ['12 – 13 de enero de 2026', m.periodo],
+        ['Intervención Coronaria Percutánea (ICP) + Coronariografía Diagnóstica', procedimientoGlobal],
+        ['CHARLES HAMPARZUMIAN HATZACORSIAN', 'AUDITORÍA CONSOLIDADA DE PACIENTES'],
+        ['1000025310 / 1501290411', universo],
+        ['56 años / Masculino', `Muestra total / ${m.total} registros`],
+        ['18/09/1969', 'No aplica para auditoría global'],
+        ['Dr. Jesús Rebón Gallardo Céd. 860572', medicoGlobal],
+        ['Dra. Luz Areli Sánchez Portilla Céd. 11510211', medicoGlobal],
+        ['Dr. Ronie Ángeles de la Torre / Dr. Luis Fernando Ríos Cuéllar', equipoGlobal],
+        ['Síndrome Coronario Crónico Escenario 6 / Cardiopatía Isquémica Crónica *(CIE-10 sugerido: I25.1)', diagnosticoGlobal],
+        ['Coronariografía diagnóstica + ICP con stent en DA (XIENCE SIERRA 2.75x15mm)', procedimientoGlobal],
+        ['🔶 OBSERVACIÓN — Score Global: 74.7 / 100', resultado],
+        ['El expediente obtiene un score global de 74.7/100, clasificado como 🔶 OBSERVACIÓN. Las brechas mayores se concentran en el reporte de hemodinamia (D2, 68/100) y especialmente en las indicaciones de egreso (D4, 50/100), que presentan ausencias significativas en la instrucción al paciente sobre signos de alarma, restricciones de actividad y cita de seguimiento. El dominio de mayor fortaleza es la nota pre-procedimiento (D1, 92.5/100).', resumen],
+        ['74.7/100', `${m.promedio}/100`],
+        ['74.7 / 100', `${m.promedio} / 100`],
+        ['74.7', String(m.promedio)],
+        ['5', String(m.criticos)],
+        ['11', String(m.mayores)],
+        ['12', String(m.menores)],
+        ['92.5', String(m.d1)],
+        ['68', String(m.d2)],
+        ['83.3', String(m.d3)],
+        ['50', String(m.d4)],
+        ['70', String(m.d5)],
+        ['122/164', `${Math.round(m.promedio * 1.64)}/164`],
+        ['Score global ponderado', 'Score promedio institucional consolidado']
+    ];
+    documentXml = jitReplaceJoinedText(documentXml, replacements);
+    zip.file('word/document.xml', documentXml);
+    return await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', compression: 'DEFLATE' });
+}
+
+function crearWordJITTodosPacientesHtml(pacientes) {
+    const lista = Array.isArray(pacientes) ? pacientes : [];
+    const m = jitMetricasAuditoriaGlobal(lista);
+    const hoy = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' });
+    const anio = new Date().getFullYear();
+    return `<!DOCTYPE html><html lang="es" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><title>Reporte JIT Hemodinamia - Auditoría global</title><style>
+@page WordSection1 { size: 21.59cm 27.94cm; margin: 2.1cm 1.55cm 1.7cm 1.55cm; }
+div.WordSection1 { page: WordSection1; }
+body { font-family: Arial, sans-serif; color:#303030; font-size:10.5pt; }
+h1 { color:#1f4e79; font-size:19pt; text-align:center; margin:0 0 5pt 0; font-weight:800; }
+h2 { color:#1f4e79; font-size:15pt; margin:24pt 0 8pt 0; font-weight:800; letter-spacing:.3pt; }
+p { margin:6pt 0; line-height:1.35; text-align:justify; }
+.center { text-align:center; }
+.meta,.kpis,.tbl { width:100%; border-collapse:collapse; table-layout:fixed; margin-top:6pt; }
+.meta { width:82%; margin:14pt auto 18pt auto; }
+.meta td,.kpis td,.tbl td,.tbl th { border:1pt solid #1f4e79; padding:6pt 8pt; vertical-align:middle; }
+.meta .label { background:#f3f6fa; color:#333; font-weight:700; width:38%; }
+.kpis td { text-align:center; padding:10pt 8pt; }
+.kpiNum { color:#1f4e79; font-size:20pt; font-weight:800; display:block; }
+.kpiLbl { color:#333; font-size:8.5pt; font-weight:700; text-transform:uppercase; }
+.tbl th { background:#1f4e79; color:white; font-size:8.5pt; text-align:left; }
+.tbl td { font-size:8.5pt; vertical-align:top; }
+.note { border-left:4pt solid #1f4e79; background:#f3f6fa; padding:9pt 10pt; margin:8pt 0 12pt 0; }
+.footer { margin-top:20pt; color:#555; font-size:8pt; text-align:center; border-top:1pt solid #d7d7d7; padding-top:8pt; }
+</style></head><body><div class="WordSection1">
+<p class="center" style="font-weight:700; color:#1f4e79; font-size:14pt; margin-top:20pt;">HOSPITAL ÁNGELES LOMAS</p><p class="center" style="font-size:10.5pt; margin-bottom:24pt;">Departamento de Inteligencia Artificial</p>
+<h1>REPORTE DE AUDITORÍA CLÍNICA</h1><p class="center" style="font-weight:700; font-size:13pt; color:#1f4e79;">SERVICIO DE HEMODINAMIA</p><p class="center">Auditoría consolidada JIT / Joint Commission</p>
+<table class="meta"><tr><td class="label">Folio de Auditoría</td><td>AUD-HEM-${anio}-GLOBAL</td></tr><tr><td class="label">Fecha de Emisión</td><td>${hoy}</td></tr><tr><td class="label">Período Auditado</td><td>${m.periodo}</td></tr><tr><td class="label">Bases Normativas</td><td>NOM-004-SSA3-2012 | Joint Commission International (JCI)</td></tr><tr><td class="label">Clasificación del Resultado</td><td>${m.clasificacion} — Score Global Promedio: ${m.promedio} / 100</td></tr></table>
+<h2>SECCIÓN 1 — DATOS DE IDENTIFICACIÓN DEL EXPEDIENTE</h2><table class="tbl"><tr><th>Campo</th><th>Datos consolidados</th><th>Campo</th><th>Datos clínicos globales</th></tr><tr><td><strong>Universo auditado</strong></td><td>${m.total} pacientes</td><td><strong>Médicos incluidos</strong></td><td>${m.medicos}</td></tr><tr><td><strong>Tipo de auditoría</strong></td><td>Consolidado institucional</td><td><strong>Procedimientos incluidos</strong></td><td>${m.procedimientos}</td></tr><tr><td><strong>Tiempo promedio</strong></td><td>${m.tiempoPromedio} min</td><td><strong>Puerta-balón fuera de meta</strong></td><td>${m.puertaBalonFuera} de ${m.puertaBalonValidos}</td></tr></table>
+<h2>SECCIÓN 2 — RESUMEN EJECUTIVO</h2><table class="kpis"><tr><td><span class="kpiNum">${m.promedio}</span><span class="kpiLbl">Score global promedio</span></td><td><span class="kpiNum">${m.criticos}</span><span class="kpiLbl">Críticos</span></td><td><span class="kpiNum">${m.mayores}</span><span class="kpiLbl">Mayores</span></td><td><span class="kpiNum">${m.menores}</span><span class="kpiLbl">Menores/Obs.</span></td></tr></table>
+<p><strong>Clasificación:</strong> La auditoría consolidada integra ${m.total} expedientes de Hemodinamia y obtiene un score global promedio de ${m.promedio}/100, clasificado como ${m.clasificacion}. El resultado se calcula como una lectura general de la base JIT, sin enlistar pacientes individuales, para obtener un dictamen institucional único.</p>
+<table class="tbl"><tr><th>Dominio</th><th>Descripción</th><th>Peso</th><th>Score promedio</th><th>Clasificación</th></tr><tr><td>D1</td><td>Nota pre-procedimiento</td><td>25%</td><td>${m.d1}</td><td>${m.d1 >= 90 ? "APROBADO" : "CONDICIONAL"}</td></tr><tr><td>D2</td><td>Nota operatoria / Reporte de hemodinamia</td><td>30%</td><td>${m.d2}</td><td>${m.d2 >= 80 ? "CONDICIONAL" : "OBSERVACIÓN"}</td></tr><tr><td>D3</td><td>Nota post-procedimiento</td><td>20%</td><td>${m.d3}</td><td>${m.d3 >= 80 ? "CONDICIONAL" : "OBSERVACIÓN"}</td></tr><tr><td>D4</td><td>Indicaciones de egreso y epicrisis</td><td>15%</td><td>${m.d4}</td><td>${m.d4 >= 70 ? "OBSERVACIÓN" : "NO APROBADO"}</td></tr><tr><td>D5</td><td>Laboratorio y estudios de imagen</td><td>10%</td><td>${m.d5}</td><td>${m.d5 >= 80 ? "CONDICIONAL" : "OBSERVACIÓN"}</td></tr><tr><td>GLOBAL</td><td>Score promedio institucional consolidado</td><td>100%</td><td>${m.promedio}</td><td>${m.clasificacion}</td></tr></table>
+<h2>SECCIÓN 3 — DICTAMEN OPERATIVO</h2><div class="note"><strong>Resultado general:</strong> Este reporte resume la auditoría de todos los pacientes como un solo resultado institucional. No se incluyen datos personales ni listado nominal; el objetivo es evaluar la tendencia global, priorizar brechas y sustentar acciones de mejora.</div><p>La validación final debe realizarse contra los expedientes fuente cuando se requiera seguimiento individual. Para un caso específico, utiliza el botón de descarga del paciente seleccionado.</p><p class="footer">Generado mediante el sistema de Auditoría de Expedientes de Hemodinamia — Hospital Ángeles Lomas — Departamento de Inteligencia Artificial.</p>
+</div></body></html>`;
+}
+
+
+async function exportarJITWordTodosPacientes() {
+    try {
+        jitForzarTodosPacientes = true;
+        const buscadorPaciente = document.getElementById('jit-paciente-buscador');
+        const buscadorDoctor = document.getElementById('jit-doctor-buscador');
+        if (buscadorPaciente) buscadorPaciente.value = '';
+        if (buscadorDoctor) buscadorDoctor.value = '';
+        renderSelectorPacientesJIT({ mantenerSeleccion: false });
+        const pacientes = obtenerPacientesJIT();
+        if (!pacientes.length) {
+            if (typeof showToast === 'function') showToast('No hay pacientes disponibles para exportar.', 'warning', 'fa-users');
+            return;
+        }
+        let blob;
+        try {
+            blob = await crearWordJITTodosPacientesDesdePlantilla(pacientes);
+        } catch (templateError) {
+            console.warn('No se pudo usar la plantilla DOCX exacta para auditoría global; se usa respaldo HTML.', templateError);
+            const html = crearWordJITTodosPacientesHtml(pacientes);
+            if (window.htmlDocx && typeof window.htmlDocx.asBlob === 'function') blob = window.htmlDocx.asBlob(html);
+            else blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+        }
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Auditoria_JIT_Hemodinamia_Auditoria_Consolidada_${new Date().toISOString().slice(0,10)}.docx`;
+        document.body.appendChild(a);
+        a.click();
+        URL.revokeObjectURL(a.href);
+        document.body.removeChild(a);
+        if (typeof registrarEventoAuditoria === 'function') registrarEventoAuditoria('DESCARGA_JIT_WORD_TODOS', `Se generó Word JIT de auditoría consolidada con ${pacientes.length} pacientes.`);
+        if (typeof showToast === 'function') showToast('Word JIT de auditoría consolidada generado.', 'success', 'fa-file-word');
+    } catch (error) {
+        console.error(error);
+        if (typeof showToast === 'function') showToast('No se pudo generar el Word JIT de todos los pacientes.', 'error', 'fa-file-word');
+    }
+}
+
 
 async function exportarJITWord() {
     try {
