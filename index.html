@@ -1565,78 +1565,8 @@
         }
     </style>
 
-
-
-    <style id="fix-paneles-superiores-compactos">
-        /* AJUSTE UX: paneles superiores compactos */
-        #data-coverage-banner { padding: 10px 14px !important; margin-bottom: 12px !important; border-radius: 16px !important; gap: 12px !important; }
-        #data-coverage-banner .coverage-banner-icon { width: 42px !important; height: 42px !important; min-width: 42px !important; border-radius: 13px !important; font-size: .95rem !important; }
-        #data-coverage-banner .coverage-banner-label { font-size: 9px !important; letter-spacing: .20em !important; margin-bottom: 3px !important; }
-        #data-coverage-banner .coverage-banner-title { font-size: .93rem !important; line-height: 1.18 !important; }
-        #data-coverage-banner .coverage-banner-subtitle { font-size: .76rem !important; margin-top: 2px !important; line-height: 1.25 !important; }
-        #data-coverage-banner .coverage-banner-meta { gap: 8px !important; }
-        #data-coverage-banner .coverage-pill { padding: 7px 10px !important; font-size: .68rem !important; }
-
-        #quality-shortcuts { gap: 10px !important; margin-bottom: 12px !important; }
-        #quality-shortcuts .quality-shortcut-card { min-height: 62px !important; padding: 12px 16px !important; border-radius: 16px !important; }
-        #quality-shortcuts .quality-shortcut-icon { width: 42px !important; height: 42px !important; border-radius: 14px !important; font-size: 17px !important; }
-        #quality-shortcuts .quality-shortcut-title { font-size: 14px !important; }
-        #quality-shortcuts .quality-shortcut-subtitle { font-size: 11px !important; margin-top: 2px !important; }
-
-        #master-filters { padding: 14px !important; margin-bottom: 14px !important; border-radius: 18px !important; }
-        #master-filters input, #master-filters select { padding: 7px 10px !important; min-height: 38px !important; }
-        #master-filters .btn-filter { padding: 7px 12px !important; font-size: .72rem !important; }
-
-        #compliance-strip { padding: 10px !important; margin-bottom: 14px !important; border-radius: 16px !important; }
-        #compliance-strip .compliance-compact-bar { padding: 10px 12px !important; border-radius: 13px !important; }
-        #compliance-strip .compliance-compact-bar > div:first-child p:first-child,
-        #compliance-strip .compliance-compact-bar > div:first-child p.text-xs,
-        #compliance-strip .compliance-compact-bar > div:first-child p.text-sm { display: none !important; }
-        #compliance-strip .compliance-compact-bar h3 { font-size: 14px !important; line-height: 1.15 !important; margin: 0 !important; }
-        #compliance-strip .compliance-pill { padding: 6px 9px !important; font-size: .68rem !important; }
-        #compliance-strip .compliance-toggle-btn { padding: 8px 11px !important; font-size: .68rem !important; }
-
-        body:not(.top-panels-visible) #data-coverage-banner,
-        body:not(.top-panels-visible) #quality-shortcuts,
-        body:not(.top-panels-visible) #master-filters { display: none !important; }
-
-        body:not(.top-panels-visible) #compliance-strip {
-            position: fixed !important; right: 22px !important; bottom: 22px !important;
-            width: auto !important; max-width: calc(100vw - 44px) !important; margin: 0 !important;
-            padding: 7px !important; z-index: 3000 !important;
-            box-shadow: 0 18px 45px rgba(0,45,114,.18) !important;
-            background: rgba(255,255,255,.97) !important; backdrop-filter: blur(10px) !important;
-        }
-        body:not(.top-panels-visible) #compliance-strip .compliance-compact-bar {
-            padding: 7px 8px !important; gap: 8px !important; border: none !important; background: transparent !important;
-        }
-        body:not(.top-panels-visible) #compliance-strip .compliance-compact-bar > div:first-child { display: none !important; }
-        body:not(.top-panels-visible) #compliance-strip .compliance-compact-meta { gap: 6px !important; }
-        body:not(.top-panels-visible) #compliance-strip .compliance-pill { display: none !important; }
-        body:not(.top-panels-visible) #compliance-strip .compliance-toggle-btn {
-            padding: 9px 12px !important; border-radius: 999px !important; white-space: nowrap !important;
-        }
-        body:not(.top-panels-visible) #compliance-strip .compliance-toggle-btn span { font-size: 0 !important; }
-        body:not(.top-panels-visible) #compliance-strip .compliance-toggle-btn span::after {
-            content: 'Cumplimiento'; font-size: .72rem !important;
-        }
-        body:not(.top-panels-visible) #compliance-strip .compliance-details { max-height: 0 !important; opacity: 0 !important; margin-top: 0 !important; }
-        body:not(.top-panels-visible) #compliance-strip.expanded {
-            width: min(720px, calc(100vw - 44px)) !important; max-height: 80vh !important; overflow-y: auto !important; padding: 10px !important;
-        }
-        body:not(.top-panels-visible) #compliance-strip.expanded .compliance-compact-bar > div:first-child { display: block !important; }
-        body:not(.top-panels-visible) #compliance-strip.expanded .compliance-pill { display: inline-flex !important; }
-        body:not(.top-panels-visible) #compliance-strip.expanded .compliance-details { max-height: 1200px !important; opacity: 1 !important; margin-top: 12px !important; }
-
-        @media (max-width: 900px) {
-            #data-coverage-banner { flex-direction: column !important; align-items: flex-start !important; }
-            #data-coverage-banner .coverage-banner-meta { width: 100% !important; justify-content: flex-start !important; }
-            body:not(.top-panels-visible) #compliance-strip { right: 12px !important; bottom: 12px !important; max-width: calc(100vw - 24px) !important; }
-        }
-    </style>
-
 </head>
-<body class="top-panels-visible">
+<body>
 
     <header>
         <div class="institutional-ribbon"></div>
@@ -2638,7 +2568,7 @@
                 <button onclick="cerrarModalJITJointCommission()" class="text-white/75 hover:text-white transition-colors"><i class="fas fa-times text-xl"></i></button>
             </div>
             <div class="p-6 text-sm text-gray-600 space-y-5">
-                <div class="compliance-safe"><strong>Word JCI dinámico integrado:</strong> este módulo conserva la misma hoja membretada y los mismos cuadros del Word original, pero actualiza el texto con la información visible/cargada en la página. Ahora permite auditar <strong>uno o varios pacientes</strong> según los registros del Excel, con búsqueda por nombre, folio, expediente o episodio.</div>
+                <div class="compliance-safe"><strong>Word JCI dinámico integrado:</strong> este módulo conserva la misma hoja membretada y los mismos cuadros del Word original, pero actualiza el texto con la información visible/cargada en la página. Ahora también permite auditar <strong>uno o varios doctores</strong> según los registros del Excel.</div>
                 <div class="grid grid-cols-1 lg:grid-cols-[1.05fr_.95fr] gap-5 items-stretch">
                     <div class="border border-slate-200 rounded-2xl bg-white shadow-sm overflow-hidden">
                         <div class="bg-slate-50 border-b border-slate-200 px-5 py-3 flex items-center justify-between gap-3">
@@ -2666,7 +2596,7 @@
                                     <div class="text-[13px] font-bold text-slate-700 mt-1">Score Global: 74.7 / 100</div>
                                 </div>
                                 <div class="mt-5 text-[11px] text-slate-500 leading-relaxed">
-                                    Vista de referencia del documento. La descarga conserva los cuadros y la hoja membretada; el texto se actualiza por el paciente seleccionado o por el grupo de pacientes seleccionados.
+                                    Vista de referencia del documento. La descarga conserva los cuadros y la hoja membretada; el texto se actualiza por paciente o por doctor seleccionado.
                                 </div>
                             </div>
                         </div>
@@ -2675,23 +2605,19 @@
                         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
                             <div class="flex items-start justify-between gap-3 mb-3">
                                 <div>
-                                    <p class="font-extrabold text-[#002d72] flex items-center gap-2"><i class="fas fa-user-injured text-[#00a4e4]"></i> Paciente(s) a auditar</p>
-                                    <p class="text-xs text-slate-500 mt-1">Busca por nombre, folio, expediente o episodio. Puedes seleccionar un paciente o varios; si lo dejas vacío, se usará el corte visible del tablero.</p>
+                                    <p class="font-extrabold text-[#002d72] flex items-center gap-2"><i class="fas fa-user-doctor text-[#00a4e4]"></i> Doctor(es) a auditar</p>
+                                    <p class="text-xs text-slate-500 mt-1">Puedes seleccionar un doctor nuevo, varios doctores o dejarlo vacío para usar el corte visible del tablero.</p>
                                 </div>
-                                <span id="jitPacienteCountBadge" class="text-[11px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200 rounded-full px-3 py-1">0 seleccionados</span>
+                                <span id="jitDoctorCountBadge" class="text-[11px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200 rounded-full px-3 py-1">0 seleccionados</span>
                             </div>
-                            <div class="relative mb-3">
-                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                                <input id="jitPacienteSearch" type="text" oninput="poblarSelectPacientesJIT()" placeholder="Buscar paciente por nombre, folio, expediente o episodio..." class="pl-10 w-full bg-slate-50 border-slate-200 text-sm">
-                            </div>
-                            <select id="jitPacienteSelect" multiple size="7" onchange="actualizarResumenPacientesJIT()" class="w-full min-h-[172px] bg-slate-50 border-slate-200 text-sm">
-                                <option value="">Carga un Excel para ver pacientes</option>
+                            <select id="jitDoctorSelect" multiple size="7" onchange="actualizarResumenDoctoresJIT()" class="w-full min-h-[172px] bg-slate-50 border-slate-200 text-sm">
+                                <option value="">Carga un Excel para ver doctores</option>
                             </select>
                             <div class="flex flex-wrap gap-2 mt-3">
-                                <button type="button" onclick="seleccionarTodosPacientesJIT()" class="btn-outline text-xs"><i class="fas fa-check-double mr-1"></i> Seleccionar todos</button>
-                                <button type="button" onclick="limpiarPacientesJIT()" class="btn-outline text-xs"><i class="fas fa-eraser mr-1"></i> Limpiar selección</button>
+                                <button type="button" onclick="seleccionarTodosDoctoresJIT()" class="btn-outline text-xs"><i class="fas fa-check-double mr-1"></i> Seleccionar todos</button>
+                                <button type="button" onclick="limpiarDoctoresJIT()" class="btn-outline text-xs"><i class="fas fa-eraser mr-1"></i> Limpiar selección</button>
                             </div>
-                            <div id="jitPacienteResumen" class="mt-3 text-xs leading-relaxed bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-600">
+                            <div id="jitDoctorResumen" class="mt-3 text-xs leading-relaxed bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-600">
                                 Sin selección: el Word usará los registros visibles en la página.
                             </div>
                         </div>
@@ -2702,9 +2628,9 @@
                             <div class="compliance-kpi"><div class="compliance-label">Base de cálculo</div><div class="compliance-value" id="jitBaseCalculoLabel">Registros visibles</div></div>
                         </div>
                         <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                            <p class="font-bold text-[#0055a5] mb-2">Word JCI con auditoría por paciente</p>
-                            <p class="leading-relaxed">Al presionar el botón, el sistema toma el expediente del paciente o los pacientes seleccionados, recalcula el resumen y reemplaza el texto del Word sin perder la hoja membretada ni los cuadros.</p>
-                            <button type="button" onclick="descargarArchivoJIT()" class="btn-primary mt-4 w-full justify-center"><i class="fas fa-file-word"></i> Descargar Word JCI por paciente</button>
+                            <p class="font-bold text-[#0055a5] mb-2">Word JCI con auditoría por doctor</p>
+                            <p class="leading-relaxed">Al presionar el botón, el sistema toma los registros del doctor o doctores seleccionados, recalcula el resumen y reemplaza el texto del Word sin perder la hoja membretada ni los cuadros.</p>
+                            <button type="button" onclick="descargarArchivoJIT()" class="btn-primary mt-4 w-full justify-center"><i class="fas fa-file-word"></i> Descargar Word JCI por doctor</button>
                         </div>
                     </div>
                 </div>
@@ -3104,7 +3030,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            document.body.classList.add('top-panels-visible');
             registrarPluginInfoGraficas();
             inyectarBotonesInfoGraficas();
             setInterval(inyectarBotonesInfoGraficas, 1200);
@@ -5328,12 +5253,6 @@ function openPredictiveChartPointDetail(datasetLabel, pointLabel, pointValue, is
                 document.querySelectorAll('.tab-section').forEach(s => { s.classList.remove('active'); });
                 const target = document.getElementById(tab + '-section');
                 if(target) { target.classList.add('active'); }
-
-                // Paneles superiores completos solo en Inicio. En los demás módulos se ocultan
-                // para que el contenido del ícono seleccionado abra arriba sin tener que bajar.
-                document.body.classList.toggle('top-panels-visible', tab === 'dashboard');
-                const compliancePanel = document.getElementById('compliance-strip');
-                if (compliancePanel && tab !== 'dashboard') compliancePanel.classList.remove('expanded');
                 
                 const mf = document.getElementById("master-filters");
                 if(mf) { if(tab === 'registro') mf.style.display = 'none'; else mf.style.display = 'block'; }
@@ -6410,8 +6329,8 @@ function cerrarModalAdministrativoCalidad() {
 function abrirModalJITJointCommission() {
     abrirModalBase('modal-jit-joint');
     setTimeout(() => {
-        if (typeof poblarSelectPacientesJIT === 'function') poblarSelectPacientesJIT();
-        if (typeof actualizarResumenPacientesJIT === 'function') actualizarResumenPacientesJIT();
+        if (typeof poblarSelectDoctoresJIT === 'function') poblarSelectDoctoresJIT();
+        if (typeof actualizarResumenDoctoresJIT === 'function') actualizarResumenDoctoresJIT();
     }, 80);
 }
 function cerrarModalJITJointCommission() {
@@ -6469,132 +6388,89 @@ function jitObtenerBaseRegistrosJIT() {
     return [];
 }
 
-function jitNormalizarPaciente(value) {
-    return String(value || '').trim() || 'Paciente no especificado';
+function jitNormalizarDoctor(value) {
+    return String(value || '').trim() || 'Médico no especificado';
 }
 
-function jitPacienteFolio(row) {
-    return String(row?.folio || row?.id || row?.expediente || row?.episodio || row?.noExpediente || '').trim();
-}
-
-function jitPacienteKey(row) {
-    const nombre = jitNormalizarPaciente(row?.paciente || row?.nombre || row?.nombrePaciente);
-    const folio = jitPacienteFolio(row) || 'SIN-FOLIO';
-    const episodio = String(row?.episodio || '').trim();
-    return `${nombre}||${folio}||${episodio}`;
-}
-
-function jitPacienteTextoBusqueda(row) {
-    return [
-        row?.paciente, row?.nombre, row?.nombrePaciente,
-        row?.folio, row?.id, row?.expediente, row?.episodio, row?.noExpediente,
-        row?.medico, row?.doctor, row?.hemodinamista, row?.medicoHemodinamista,
-        row?.diagnostico, row?.procedimiento
-    ].filter(Boolean).join(' ').toLowerCase();
-}
-
-function jitObtenerPacientesSeleccionados() {
-    const select = document.getElementById('jitPacienteSelect');
+function jitObtenerDoctoresSeleccionados() {
+    const select = document.getElementById('jitDoctorSelect');
     if (!select) return [];
     return Array.from(select.selectedOptions || []).map(opt => opt.value).filter(Boolean);
 }
 
-function jitPacientesDisponibles() {
+function jitDoctoresDisponibles() {
     const base = jitObtenerBaseRegistrosJIT();
-    const filtro = String(document.getElementById('jitPacienteSearch')?.value || '').trim().toLowerCase();
     const mapa = new Map();
     base.forEach(row => {
-        if (filtro && !jitPacienteTextoBusqueda(row).includes(filtro)) return;
-        const key = jitPacienteKey(row);
-        if (!mapa.has(key)) {
-            const nombre = jitNormalizarPaciente(row?.paciente || row?.nombre || row?.nombrePaciente);
-            const folio = jitPacienteFolio(row) || 'Sin folio';
-            const episodio = row?.episodio ? ` · Episodio ${row.episodio}` : '';
-            const medico = row?.medico || row?.doctor || row?.hemodinamista || row?.medicoHemodinamista || 'Médico no especificado';
-            mapa.set(key, { key, nombre, folio, episodio, medico, row, total: 0 });
-        }
-        mapa.get(key).total += 1;
+        const medico = jitNormalizarDoctor(row?.medico || row?.doctor || row?.hemodinamista || row?.medicoHemodinamista);
+        mapa.set(medico, (mapa.get(medico) || 0) + 1);
     });
-    return Array.from(mapa.values()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+    return Array.from(mapa.entries()).sort((a, b) => a[0].localeCompare(b[0], 'es'));
 }
 
-function poblarSelectPacientesJIT() {
-    const select = document.getElementById('jitPacienteSelect');
+function poblarSelectDoctoresJIT() {
+    const select = document.getElementById('jitDoctorSelect');
     if (!select) return;
-    const seleccionAnterior = new Set(jitObtenerPacientesSeleccionados());
-    const pacientes = jitPacientesDisponibles();
+    const seleccionAnterior = new Set(jitObtenerDoctoresSeleccionados());
+    const doctores = jitDoctoresDisponibles();
     select.innerHTML = '';
-    if (!pacientes.length) {
+    if (!doctores.length) {
         const opt = document.createElement('option');
         opt.value = '';
-        opt.textContent = 'No hay pacientes que coincidan. Carga Excel o cambia la búsqueda.';
+        opt.textContent = 'Carga un Excel para ver doctores';
         select.appendChild(opt);
-        actualizarResumenPacientesJIT();
         return;
     }
-    pacientes.forEach(item => {
+    doctores.forEach(([medico, total]) => {
         const opt = document.createElement('option');
-        opt.value = item.key;
-        opt.textContent = `${item.nombre} · Folio/Exp. ${item.folio}${item.episodio} · ${item.total} registro${item.total === 1 ? '' : 's'}`;
-        opt.selected = seleccionAnterior.has(item.key);
+        opt.value = medico;
+        opt.textContent = `${medico} · ${total} registro${total === 1 ? '' : 's'}`;
+        opt.selected = seleccionAnterior.has(medico);
         select.appendChild(opt);
     });
-    actualizarResumenPacientesJIT();
 }
 
-function seleccionarTodosPacientesJIT() {
-    const select = document.getElementById('jitPacienteSelect');
+function seleccionarTodosDoctoresJIT() {
+    const select = document.getElementById('jitDoctorSelect');
     if (!select) return;
     Array.from(select.options).forEach(opt => { if (opt.value) opt.selected = true; });
-    actualizarResumenPacientesJIT();
+    actualizarResumenDoctoresJIT();
 }
 
-function limpiarPacientesJIT() {
-    const select = document.getElementById('jitPacienteSelect');
+function limpiarDoctoresJIT() {
+    const select = document.getElementById('jitDoctorSelect');
     if (!select) return;
     Array.from(select.options).forEach(opt => { opt.selected = false; });
-    actualizarResumenPacientesJIT();
+    actualizarResumenDoctoresJIT();
 }
 
-function jitRegistrosSeleccionadosPorPaciente() {
+function actualizarResumenDoctoresJIT() {
+    const seleccion = jitObtenerDoctoresSeleccionados();
     const base = jitObtenerBaseRegistrosJIT();
-    const seleccion = jitObtenerPacientesSeleccionados();
-    if (!seleccion.length) return ((Array.isArray(DataVista) && DataVista.length) ? DataVista : base);
-    const set = new Set(seleccion);
-    return base.filter(row => set.has(jitPacienteKey(row)));
-}
-
-function actualizarResumenPacientesJIT() {
-    const seleccion = jitObtenerPacientesSeleccionados();
-    const base = jitObtenerBaseRegistrosJIT();
-    const registros = jitRegistrosSeleccionadosPorPaciente();
-    const badge = document.getElementById('jitPacienteCountBadge');
-    const resumen = document.getElementById('jitPacienteResumen');
+    const registros = seleccion.length ? base.filter(row => seleccion.includes(jitNormalizarDoctor(row?.medico || row?.doctor || row?.hemodinamista || row?.medicoHemodinamista))) : ((Array.isArray(DataVista) && DataVista.length) ? DataVista : base);
+    const badge = document.getElementById('jitDoctorCountBadge');
+    const resumen = document.getElementById('jitDoctorResumen');
     const modo = document.getElementById('jitModoAuditoriaLabel');
     const baseLabel = document.getElementById('jitBaseCalculoLabel');
     if (badge) badge.textContent = `${seleccion.length} seleccionado${seleccion.length === 1 ? '' : 's'}`;
-    if (modo) modo.textContent = seleccion.length === 1 ? 'Auditoría por paciente' : (seleccion.length > 1 ? 'Auditoría por pacientes seleccionados' : 'Paciente / corte visible');
+    if (modo) modo.textContent = seleccion.length ? `Auditoría por doctor${seleccion.length > 1 ? 'es' : ''}` : 'Paciente / corte visible';
     if (baseLabel) baseLabel.textContent = `${registros.length} registro${registros.length === 1 ? '' : 's'} a evaluar`;
     if (resumen) {
-        if (!base.length) resumen.innerHTML = 'Aún no hay Excel cargado. Cuando subas la base, aquí aparecerán los pacientes disponibles para auditar.';
-        else if (seleccion.length === 1) {
-            const item = jitPacientesDisponibles().find(p => p.key === seleccion[0]);
-            resumen.innerHTML = `<strong>Paciente preparado:</strong> ${item ? item.nombre : 'Paciente seleccionado'}.<br><strong>Folio/expediente:</strong> ${item ? item.folio : 'Sin dato'}.<br><strong>Registros incluidos:</strong> ${registros.length}.`;
-        } else if (seleccion.length > 1) resumen.innerHTML = `<strong>Auditoría preparada:</strong> ${seleccion.length} pacientes seleccionados.<br><strong>Registros incluidos:</strong> ${registros.length}.`;
-        else resumen.innerHTML = `<strong>Sin paciente seleccionado:</strong> se usará el corte visible del tablero.<br><strong>Registros visibles/base:</strong> ${registros.length}.`;
+        if (!base.length) resumen.innerHTML = 'Aún no hay Excel cargado. Cuando subas la base, aquí aparecerán los doctores disponibles para auditar.';
+        else if (seleccion.length) resumen.innerHTML = `<strong>Auditoría preparada:</strong> ${seleccion.join(', ')}.<br><strong>Registros incluidos:</strong> ${registros.length}.`;
+        else resumen.innerHTML = `<strong>Sin doctor seleccionado:</strong> se usará el corte visible del tablero.<br><strong>Registros visibles/base:</strong> ${registros.length}.`;
     }
 }
 
 function jitCalcularDatosPagina() {
     const base = jitObtenerBaseRegistrosJIT();
-    const pacientesSeleccionados = jitObtenerPacientesSeleccionados();
+    const doctoresSeleccionados = jitObtenerDoctoresSeleccionados();
     const dataVisible = (Array.isArray(DataVista) && DataVista.length) ? DataVista : base;
-    const data = pacientesSeleccionados.length ? base.filter(row => pacientesSeleccionados.includes(jitPacienteKey(row))) : dataVisible;
+    const data = doctoresSeleccionados.length ? base.filter(row => doctoresSeleccionados.includes(jitNormalizarDoctor(row?.medico || row?.doctor || row?.hemodinamista || row?.medicoHemodinamista))) : dataVisible;
     const paciente = data[0] || {};
     const total = data.length;
-    const esAuditoriaPaciente = pacientesSeleccionados.length === 1;
-    const esAuditoriaPacientes = pacientesSeleccionados.length > 1;
-    const nombrePacienteBase = jitNormalizarPaciente(paciente.paciente || paciente.nombre || paciente.nombrePaciente || 'Paciente seleccionado del tablero');
+    const esAuditoriaDoctor = doctoresSeleccionados.length > 0;
+    const doctorTexto = doctoresSeleccionados.length ? doctoresSeleccionados.join(', ') : jitNormalizarDoctor(paciente.medico || paciente.doctor || paciente.hemodinamista || paciente.medicoHemodinamista);
     const complicados = data.filter(d => d.complicaciones && String(d.complicaciones).toLowerCase() !== 'no').length;
     const puertaBalonFuera = data.filter(d => d.puertaBalon !== null && d.puertaBalon !== undefined && Number(d.puertaBalon) > 90).length;
     const tiempos = data.map(d => Number(d.tiempo)).filter(v => !Number.isNaN(v) && v > 0);
@@ -6606,28 +6482,24 @@ function jitCalcularDatosPagina() {
     const clasificacion = score >= 90 ? 'APROBADO' : score >= 80 ? 'CONDICIONAL' : score >= 70 ? 'OBSERVACIÓN' : 'NO APROBADO';
     const fechaEmision = jitFormatoFechaLarga(new Date().toISOString().slice(0,10));
     const rango = (typeof getFechaRangoExport === 'function') ? getFechaRangoExport() : (typeof getExportFiltersText === 'function' ? getExportFiltersText() : 'Corte activo del tablero');
-    const id = paciente.id || paciente.folio || paciente.expediente || paciente.episodio || 'SIN-ID';
-    const folioExp = paciente.folio || paciente.id || paciente.expediente || 'Sin expediente';
-    const episodio = paciente.episodio || paciente.noEpisodio || paciente.id || 'Sin episodio';
-    const nombrePaciente = esAuditoriaPacientes ? `Auditoría de ${pacientesSeleccionados.length} pacientes seleccionados` : nombrePacienteBase;
-    const expedienteEpisodio = esAuditoriaPacientes ? `Pacientes auditados: ${pacientesSeleccionados.length} / Registros: ${total}` : `${folioExp} / ${episodio}`;
-    const edadSexo = esAuditoriaPacientes ? 'Modalidad: auditoría de pacientes seleccionados' : `${paciente.edad || 'Sin edad'} años / ${jitGeneroLargo(paciente.genero || paciente.sexo)}`;
-    const medicoTexto = paciente.medico || paciente.doctor || paciente.hemodinamista || paciente.medicoHemodinamista || jitTopValue(data, 'medico', 'Médico no especificado');
+    const id = paciente.id || paciente.episodio || doctorTexto || 'SIN-ID';
+    const nombrePaciente = esAuditoriaDoctor ? `Auditoría al médico: ${doctorTexto}` : (paciente.paciente || 'Paciente seleccionado del tablero');
+    const expedienteEpisodio = esAuditoriaDoctor ? `Registros auditados: ${total}` : `${paciente.id || 'Sin expediente'} / ${paciente.episodio || paciente.id || 'Sin episodio'}`;
+    const edadSexo = esAuditoriaDoctor ? `Modalidad: auditoría por médico${doctoresSeleccionados.length > 1 ? 's' : ''}` : `${paciente.edad || 'Sin edad'} años / ${jitGeneroLargo(paciente.genero)}`;
     return {
-        data, total, paciente, esAuditoriaPaciente, esAuditoriaPacientes, pacientesSeleccionados,
-        nombrePaciente, expedienteEpisodio, edadSexo,
-        nacimiento: esAuditoriaPacientes ? 'No aplica en auditoría agrupada' : (paciente.fechaNacimiento || paciente.nacimiento || 'No disponible en la base cargada'),
-        medicoHemodinamista: medicoTexto,
-        cardiologoEvaluador: esAuditoriaPacientes ? 'Auditoría agrupada por pacientes' : (paciente.cardiologo || medicoTexto || 'Cardiólogo evaluador no especificado'),
-        fechaProcedimiento: esAuditoriaPacientes ? rango : jitFormatoFechaLarga(paciente.fecha || paciente.fechaProcedimiento),
-        fechaAlta: esAuditoriaPacientes ? `Corte auditado: ${rango}` : (paciente.fechaAlta ? jitFormatoFechaLarga(paciente.fechaAlta) : (paciente.estado ? `Estado registrado: ${paciente.estado}` : 'No disponible en la base cargada')),
+        data, total, paciente, esAuditoriaDoctor, doctoresSeleccionados, doctorTexto, nombrePaciente, expedienteEpisodio, edadSexo,
+        nacimiento: esAuditoriaDoctor ? 'No aplica en auditoría agrupada' : (paciente.fechaNacimiento || 'No disponible en la base cargada'),
+        medicoHemodinamista: doctorTexto || 'Médico no especificado',
+        cardiologoEvaluador: esAuditoriaDoctor ? 'Auditoría agrupada por médico' : (paciente.cardiologo || paciente.medico || 'Cardiólogo evaluador no especificado'),
+        fechaProcedimiento: esAuditoriaDoctor ? rango : jitFormatoFechaLarga(paciente.fecha),
+        fechaAlta: esAuditoriaDoctor ? `Corte auditado: ${rango}` : (paciente.estado ? `Estado registrado: ${paciente.estado}` : 'No disponible en la base cargada'),
         diagnostico: paciente.diagnostico || jitTopValue(data, 'diagnostico'),
         procedimiento: paciente.procedimiento || jitTopValue(data, 'procedimiento'),
-        anestesiologo: paciente.anestesiologo || paciente.equipo || 'Equipo / anestesia no especificado',
+        anestesiologo: paciente.equipo || 'Equipo / anestesia no especificado',
         folio: `AUD-HEM-${new Date().getFullYear()}-${String(id).replace(/[^0-9A-Za-z]/g, '').slice(-6).padStart(6, '0')}`,
         fechaEmision, rango, score: score.toFixed(1), clasificacion, criticos, mayores, menores,
         promedio: promedio ? promedio.toFixed(1) : 'Sin dato',
-        medicoTop: medicoTexto || jitTopValue(data, 'medico'), diagnosticoTop: jitTopValue(data, 'diagnostico'), procedimientoTop: jitTopValue(data, 'procedimiento'), estadoTop: jitTopValue(data, 'estado'),
+        medicoTop: doctorTexto || jitTopValue(data, 'medico'), diagnosticoTop: jitTopValue(data, 'diagnostico'), procedimientoTop: jitTopValue(data, 'procedimiento'), estadoTop: jitTopValue(data, 'estado'),
         tasaComp: total ? ((complicados / total) * 100).toFixed(1) : '0.0', puertaBalonFuera
     };
 }
@@ -6636,9 +6508,9 @@ function jitCalcularDatosPagina() {
 if (typeof window !== 'undefined') {
     window.addEventListener('load', () => {
         setTimeout(() => {
-            if (document.getElementById('jitPacienteSelect')) {
-                poblarSelectPacientesJIT();
-                actualizarResumenPacientesJIT();
+            if (document.getElementById('jitDoctorSelect')) {
+                poblarSelectDoctoresJIT();
+                actualizarResumenDoctoresJIT();
             }
         }, 600);
     });
@@ -6664,9 +6536,9 @@ function jitAplicarDatosAWordXml(xml, info) {
         ['Dr. Ronie Ángeles de la Torre / Dr. Luis Fernando Ríos Cuéllar', info.anestesiologo],
         ['74.7 / 100', `${info.score} / 100`],
         ['Clasificación: El expediente obtiene un score global de 74.7/100, clasificado como 🔶 OBSERVACIÓN. Las brechas mayores se concentran en el reporte de hemodinamia (D2, 68/100) y especialmente en las indicaciones de egreso (D4, 50/100), que presentan ausencias significativas en la instrucción al paciente sobre signos de alarma, restricciones de actividad y cita de seguimiento. El dominio de mayor fortaleza es la nota pre-procedimiento (D1, 92.5/100).',
-         `${info.esAuditoriaPacientes ? 'Clasificación: La auditoría de pacientes seleccionados considera' : 'Clasificación: El expediente seleccionado considera'} ${info.total} registro(s) y obtiene un score global estimado de ${info.score}/100, clasificado como 🔶 ${info.clasificacion}. La lectura se genera con base en los datos cargados en el tablero: médico responsable ${info.medicoTop}, diagnóstico predominante ${info.diagnosticoTop}, procedimiento predominante ${info.procedimientoTop}, tasa de complicaciones ${info.tasaComp}% y tiempo promedio de sala ${info.promedio} minutos.`],
+         `${info.esAuditoriaDoctor ? 'Clasificación: La auditoría por médico considera' : 'Clasificación: El corte actual de la página considera'} ${info.total} registro(s) y obtiene un score global estimado de ${info.score}/100, clasificado como 🔶 ${info.clasificacion}. La lectura se genera con base en los datos cargados en el tablero: médico(s) auditado(s) ${info.medicoTop}, diagnóstico predominante ${info.diagnosticoTop}, procedimiento predominante ${info.procedimientoTop}, tasa de complicaciones ${info.tasaComp}% y tiempo promedio de sala ${info.promedio} minutos.`],
         ['El expediente clínico del paciente Charles Hamparzumian Hatzacorsian, correspondiente al procedimiento de Coronariografía Diagnóstica + Intervención Coronaria Percutánea con implante de stent en arteria descendente anterior (XIENCE SIERRA 2.75x15mm) realizado el 12 de enero de 2026 en el Servicio de Hemodinamia del Hospital Ángeles Lomas, presenta brechas mayores que comprometen la integridad documental y la continuidad asistencial en múltiples dominios.',
-         `${info.esAuditoriaPacientes ? 'La auditoría clínica de los pacientes seleccionados' : 'El expediente clínico del paciente ' + info.nombrePaciente}, correspondiente al servicio de Hemodinamia del Hospital Ángeles Lomas, se actualizó con la información cargada en la página. El corte analítico contiene ${info.total} registro(s), procedimiento predominante ${info.procedimientoTop}, diagnóstico predominante ${info.diagnosticoTop}, estado predominante ${info.estadoTop} y ${info.criticos} hallazgo(s) crítico(s) estimado(s) para revisión.`],
+         `${info.esAuditoriaDoctor ? 'La auditoría clínica del médico ' + info.doctorTexto : 'El expediente clínico del paciente ' + info.nombrePaciente}, correspondiente al servicio de Hemodinamia del Hospital Ángeles Lomas, se actualizó con la información cargada en la página. El corte analítico contiene ${info.total} registro(s), procedimiento predominante ${info.procedimientoTop}, diagnóstico predominante ${info.diagnosticoTop}, estado predominante ${info.estadoTop} y ${info.criticos} hallazgo(s) crítico(s) estimado(s) para revisión.`],
         ['Se emite dictamen de OBSERVACIÓN con un score global de 74.7/100. El servicio deberá presentar un plan de acción correctiva formal en un plazo no mayor a 72 horas, avalado por la Jefatura del Servicio de Hemodinamia y el Departamento de Calidad.',
          `Se emite dictamen de ${info.clasificacion} con un score global de ${info.score}/100. El servicio deberá validar la información contra el expediente clínico y, si aplica, documentar acciones correctivas con Jefatura de Hemodinamia y Calidad.`]
     ];
@@ -6692,13 +6564,13 @@ async function descargarArchivoJIT() {
         const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `Auditoria_JCI_${String((info.nombrePaciente || 'paciente')).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9_-]+/g, '_').slice(0, 45)}.docx`;
+        a.download = `Auditoria_JCI_${String(info.esAuditoriaDoctor ? info.doctorTexto : (info.nombrePaciente || 'paciente')).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9_-]+/g, '_').slice(0, 45)}.docx`;
         document.body.appendChild(a);
         a.click();
         URL.revokeObjectURL(a.href);
         document.body.removeChild(a);
-        if (typeof registrarEventoAuditoria === 'function') registrarEventoAuditoria('DESCARGA_JCI_DINAMICA', `Se descargó auditoría Word JCI actualizada: ${info.total} registros, modalidad ${info.esAuditoriaPacientes ? 'pacientes' : 'paciente/corte visible'}.`);
-        if (typeof showToast === 'function') showToast(info.esAuditoriaPacientes ? 'Word JCI generado por pacientes seleccionados.' : 'Word JCI generado por paciente.', 'success', 'fa-file-word');
+        if (typeof registrarEventoAuditoria === 'function') registrarEventoAuditoria('DESCARGA_JCI_DINAMICA', `Se descargó auditoría Word JCI actualizada: ${info.total} registros, modalidad ${info.esAuditoriaDoctor ? 'doctor' : 'paciente/corte visible'}.`);
+        if (typeof showToast === 'function') showToast(info.esAuditoriaDoctor ? 'Word JCI generado por doctor.' : 'Word JCI actualizado con datos de la página.', 'success', 'fa-file-word');
     } catch (error) {
         console.error(error);
         try {
