@@ -8243,6 +8243,167 @@ function crearDocumentoWordDesdeSecciones(secciones, tituloDocumento) {
   </div>
 
 
+
+
+<!-- ==========================================================
+     CORRECCIÓN FINAL UX - PESTAÑAS Y PANEL DE CUMPLIMIENTO
+     - Los paneles superiores solo se muestran en Inicio/Resumen.
+     - En Exportar y demás módulos no aparece el panel flotante.
+     - Si Cumplimiento se abre, vuelve a cerrar correctamente.
+========================================================== -->
+<style id="fix-pestanas-sin-paneles-estorbosos">
+    body[data-current-tab]:not([data-current-tab="dashboard"]) #data-coverage-banner,
+    body[data-current-tab]:not([data-current-tab="dashboard"]) #quality-shortcuts,
+    body[data-current-tab]:not([data-current-tab="dashboard"]) #master-filters,
+    body[data-current-tab]:not([data-current-tab="dashboard"]) #compliance-strip {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        position: static !important;
+        width: 0 !important;
+        height: 0 !important;
+        max-height: 0 !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: 0 !important;
+        overflow: hidden !important;
+        box-shadow: none !important;
+    }
+
+    body[data-current-tab="dashboard"] #data-coverage-banner,
+    body[data-current-tab="dashboard"] #quality-shortcuts,
+    body[data-current-tab="dashboard"] #master-filters,
+    body[data-current-tab="dashboard"] #compliance-strip {
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+
+    body[data-current-tab="dashboard"] #compliance-strip {
+        display: block !important;
+        position: static !important;
+        width: auto !important;
+        height: auto !important;
+        max-height: none !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+    }
+
+    body[data-current-tab="dashboard"] #compliance-strip:not(.expanded) .compliance-details {
+        max-height: 0 !important;
+        opacity: 0 !important;
+        margin-top: 0 !important;
+        overflow: hidden !important;
+    }
+
+    body[data-current-tab="dashboard"] #compliance-strip.expanded .compliance-details {
+        max-height: 1200px !important;
+        opacity: 1 !important;
+        margin-top: 10px !important;
+        overflow: visible !important;
+    }
+
+    /* Quita reservas de altura heredadas cuando se ocultan paneles superiores */
+    body[data-current-tab]:not([data-current-tab="dashboard"]) .main-content,
+    body[data-current-tab]:not([data-current-tab="dashboard"]) #main-scroll {
+        scroll-padding-top: 0 !important;
+    }
+
+    body[data-current-tab]:not([data-current-tab="dashboard"]) .tab-section.active {
+        margin-top: 0 !important;
+    }
+
+    /* Exportar debe ocupar el ancho natural, no quedar desplazado por paneles flotantes */
+    body[data-current-tab="exportar"] #exportar-section,
+    body[data-current-tab="exportar"] #exportar-section .section-shell,
+    body[data-current-tab="exportar"] #exportar-section .card {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Botón de cumplimiento más claro en inicio */
+    body[data-current-tab="dashboard"] #compliance-strip .compliance-toggle-btn span::after {
+        content: "" !important;
+        font-size: inherit !important;
+    }
+</style>
+<script id="fix-pestanas-cierre-cumplimiento">
+(function(){
+    function getActiveTabName(){
+        const active = document.querySelector('.tab-section.active');
+        if(!active || !active.id) return 'dashboard';
+        return active.id.replace('-section','');
+    }
+
+    function aplicarEstadoVisualDeTab(tab){
+        const current = tab || getActiveTabName();
+        document.body.setAttribute('data-current-tab', current);
+        document.body.classList.toggle('top-panels-visible', current === 'dashboard');
+
+        const strip = document.getElementById('compliance-strip');
+        if(strip && current !== 'dashboard') {
+            strip.classList.remove('expanded');
+            strip.style.display = '';
+            strip.style.position = '';
+            strip.style.width = '';
+            strip.style.height = '';
+            strip.style.maxHeight = '';
+            strip.style.overflow = '';
+        }
+
+        const main = document.getElementById('main-scroll') || document.querySelector('.main-content');
+        if(main) main.scrollTo({ top: 0, behavior: 'auto' });
+    }
+
+    const originalShowTab = window.showTab;
+    if(typeof originalShowTab === 'function'){
+        window.showTab = function(tab){
+            const result = originalShowTab.apply(this, arguments);
+            aplicarEstadoVisualDeTab(tab);
+            return result;
+        };
+    }
+
+    const originalToggle = window.toggleComplianceStrip;
+    window.toggleComplianceStrip = function(forceState){
+        const strip = document.getElementById('compliance-strip');
+        if(!strip) return;
+        const currentTab = document.body.getAttribute('data-current-tab') || getActiveTabName();
+        if(currentTab !== 'dashboard'){
+            strip.classList.remove('expanded');
+            return;
+        }
+        const expand = typeof forceState === 'boolean' ? forceState : !strip.classList.contains('expanded');
+        strip.classList.toggle('expanded', expand);
+    };
+
+    document.addEventListener('click', function(ev){
+        const strip = document.getElementById('compliance-strip');
+        if(!strip || !strip.classList.contains('expanded')) return;
+        if(document.body.getAttribute('data-current-tab') !== 'dashboard'){
+            strip.classList.remove('expanded');
+            return;
+        }
+        if(!strip.contains(ev.target)) strip.classList.remove('expanded');
+    }, true);
+
+    document.addEventListener('keydown', function(ev){
+        if(ev.key === 'Escape'){
+            const strip = document.getElementById('compliance-strip');
+            if(strip) strip.classList.remove('expanded');
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function(){
+        aplicarEstadoVisualDeTab(getActiveTabName());
+    });
+
+    setTimeout(function(){ aplicarEstadoVisualDeTab(getActiveTabName()); }, 50);
+})();
+</script>
+
 </body>
 </html>`;
 }
@@ -9608,6 +9769,167 @@ window.exportarResumenIAWord = async function exportarResumenIAWord() {
     const charts = await v4CollectChartPayloads('analisis');
     await v4ExportarSecciones([{ key: 'analisis', titulo, html, charts }], `Reporte - ${titulo}`, 'analisis');
   };
+})();
+</script>
+
+
+
+<!-- ==========================================================
+     CORRECCIÓN FINAL UX - PESTAÑAS Y PANEL DE CUMPLIMIENTO
+     - Los paneles superiores solo se muestran en Inicio/Resumen.
+     - En Exportar y demás módulos no aparece el panel flotante.
+     - Si Cumplimiento se abre, vuelve a cerrar correctamente.
+========================================================== -->
+<style id="fix-pestanas-sin-paneles-estorbosos">
+    body[data-current-tab]:not([data-current-tab="dashboard"]) #data-coverage-banner,
+    body[data-current-tab]:not([data-current-tab="dashboard"]) #quality-shortcuts,
+    body[data-current-tab]:not([data-current-tab="dashboard"]) #master-filters,
+    body[data-current-tab]:not([data-current-tab="dashboard"]) #compliance-strip {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        position: static !important;
+        width: 0 !important;
+        height: 0 !important;
+        max-height: 0 !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: 0 !important;
+        overflow: hidden !important;
+        box-shadow: none !important;
+    }
+
+    body[data-current-tab="dashboard"] #data-coverage-banner,
+    body[data-current-tab="dashboard"] #quality-shortcuts,
+    body[data-current-tab="dashboard"] #master-filters,
+    body[data-current-tab="dashboard"] #compliance-strip {
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+
+    body[data-current-tab="dashboard"] #compliance-strip {
+        display: block !important;
+        position: static !important;
+        width: auto !important;
+        height: auto !important;
+        max-height: none !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+    }
+
+    body[data-current-tab="dashboard"] #compliance-strip:not(.expanded) .compliance-details {
+        max-height: 0 !important;
+        opacity: 0 !important;
+        margin-top: 0 !important;
+        overflow: hidden !important;
+    }
+
+    body[data-current-tab="dashboard"] #compliance-strip.expanded .compliance-details {
+        max-height: 1200px !important;
+        opacity: 1 !important;
+        margin-top: 10px !important;
+        overflow: visible !important;
+    }
+
+    /* Quita reservas de altura heredadas cuando se ocultan paneles superiores */
+    body[data-current-tab]:not([data-current-tab="dashboard"]) .main-content,
+    body[data-current-tab]:not([data-current-tab="dashboard"]) #main-scroll {
+        scroll-padding-top: 0 !important;
+    }
+
+    body[data-current-tab]:not([data-current-tab="dashboard"]) .tab-section.active {
+        margin-top: 0 !important;
+    }
+
+    /* Exportar debe ocupar el ancho natural, no quedar desplazado por paneles flotantes */
+    body[data-current-tab="exportar"] #exportar-section,
+    body[data-current-tab="exportar"] #exportar-section .section-shell,
+    body[data-current-tab="exportar"] #exportar-section .card {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Botón de cumplimiento más claro en inicio */
+    body[data-current-tab="dashboard"] #compliance-strip .compliance-toggle-btn span::after {
+        content: "" !important;
+        font-size: inherit !important;
+    }
+</style>
+<script id="fix-pestanas-cierre-cumplimiento">
+(function(){
+    function getActiveTabName(){
+        const active = document.querySelector('.tab-section.active');
+        if(!active || !active.id) return 'dashboard';
+        return active.id.replace('-section','');
+    }
+
+    function aplicarEstadoVisualDeTab(tab){
+        const current = tab || getActiveTabName();
+        document.body.setAttribute('data-current-tab', current);
+        document.body.classList.toggle('top-panels-visible', current === 'dashboard');
+
+        const strip = document.getElementById('compliance-strip');
+        if(strip && current !== 'dashboard') {
+            strip.classList.remove('expanded');
+            strip.style.display = '';
+            strip.style.position = '';
+            strip.style.width = '';
+            strip.style.height = '';
+            strip.style.maxHeight = '';
+            strip.style.overflow = '';
+        }
+
+        const main = document.getElementById('main-scroll') || document.querySelector('.main-content');
+        if(main) main.scrollTo({ top: 0, behavior: 'auto' });
+    }
+
+    const originalShowTab = window.showTab;
+    if(typeof originalShowTab === 'function'){
+        window.showTab = function(tab){
+            const result = originalShowTab.apply(this, arguments);
+            aplicarEstadoVisualDeTab(tab);
+            return result;
+        };
+    }
+
+    const originalToggle = window.toggleComplianceStrip;
+    window.toggleComplianceStrip = function(forceState){
+        const strip = document.getElementById('compliance-strip');
+        if(!strip) return;
+        const currentTab = document.body.getAttribute('data-current-tab') || getActiveTabName();
+        if(currentTab !== 'dashboard'){
+            strip.classList.remove('expanded');
+            return;
+        }
+        const expand = typeof forceState === 'boolean' ? forceState : !strip.classList.contains('expanded');
+        strip.classList.toggle('expanded', expand);
+    };
+
+    document.addEventListener('click', function(ev){
+        const strip = document.getElementById('compliance-strip');
+        if(!strip || !strip.classList.contains('expanded')) return;
+        if(document.body.getAttribute('data-current-tab') !== 'dashboard'){
+            strip.classList.remove('expanded');
+            return;
+        }
+        if(!strip.contains(ev.target)) strip.classList.remove('expanded');
+    }, true);
+
+    document.addEventListener('keydown', function(ev){
+        if(ev.key === 'Escape'){
+            const strip = document.getElementById('compliance-strip');
+            if(strip) strip.classList.remove('expanded');
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function(){
+        aplicarEstadoVisualDeTab(getActiveTabName());
+    });
+
+    setTimeout(function(){ aplicarEstadoVisualDeTab(getActiveTabName()); }, 50);
 })();
 </script>
 
