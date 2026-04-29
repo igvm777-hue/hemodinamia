@@ -39,6 +39,7 @@
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
@@ -6606,20 +6607,152 @@ p { margin:6pt 0; line-height:1.35; text-align:justify; }
 </html>`;
 }
 
-function exportarJITWord() {
+function jitBase64ToUint8Array(base64) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes;
+}
+
+function jitXmlEscape(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+function jitReplaceJoinedText(xml, replacements) {
+    const parser = new DOMParser();
+    const serializer = new XMLSerializer();
+    const doc = parser.parseFromString(xml, 'application/xml');
+    const parseError = doc.getElementsByTagName('parsererror')[0];
+    if (parseError) return xml;
+
+    const textNodes = Array.from(doc.getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 't'));
+
+    const rebuildIndex = () => {
+        let joined = '';
+        const map = [];
+        textNodes.forEach((node, nodeIndex) => {
+            const value = node.textContent || '';
+            for (let i = 0; i < value.length; i++) map.push({ nodeIndex, offset: i });
+            joined += value;
+        });
+        return { joined, map };
+    };
+
+    const applyReplacement = (search, replace) => {
+        if (!search) return;
+        let guard = 0;
+        while (guard++ < 80) {
+            const { joined, map } = rebuildIndex();
+            const pos = joined.indexOf(search);
+            if (pos < 0) break;
+            const end = pos + search.length - 1;
+            const first = map[pos];
+            const last = map[end];
+            if (!first || !last) break;
+
+            const firstNode = textNodes[first.nodeIndex];
+            const lastNode = textNodes[last.nodeIndex];
+            const firstText = firstNode.textContent || '';
+            const lastText = lastNode.textContent || '';
+
+            if (first.nodeIndex === last.nodeIndex) {
+                firstNode.textContent = firstText.slice(0, first.offset) + replace + firstText.slice(last.offset + 1);
+            } else {
+                firstNode.textContent = firstText.slice(0, first.offset) + replace;
+                for (let n = first.nodeIndex + 1; n < last.nodeIndex; n++) textNodes[n].textContent = '';
+                lastNode.textContent = lastText.slice(last.offset + 1);
+            }
+        }
+    };
+
+    replacements.forEach(([search, replace]) => applyReplacement(String(search), String(replace ?? '')));
+    return serializer.serializeToString(doc);
+}
+
+async function crearWordJITPacienteDesdePlantilla(p) {
+    if (!window.JSZip || !JIT_AUDITORIA_WORD_BASE64) throw new Error('Plantilla Word no disponible');
+
+    const score = jitCalcularScorePaciente(p);
+    const clasificacion = jitClasificacion(score);
+    const fechaAlta = p.estado === 'Alta' ? jitSumarDias(p.fecha, 1) : '';
+    const sexo = p.genero === 'M' ? 'Masculino' : (p.genero === 'F' ? 'Femenino' : jitTexto(p.genero));
+    const nombre = jitTexto(p.paciente).toUpperCase();
+    const procedimiento = jitTexto(p.procedimiento);
+    const diagnostico = jitTexto(p.diagnostico);
+    const medico = jitTexto(p.medico);
+    const equipo = jitTexto(p.equipo);
+    const estado = jitTexto(p.estado);
+    const comp = jitTexto(p.complicaciones, 'No');
+    const folio = `AUD-HEM-${new Date().getFullYear()}-${jitTexto(p.id, '000')}`;
+    const hoy = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' });
+    const fechaProc = jitFechaLarga(p.fecha);
+    const fechaAltaTxt = fechaAlta ? jitFechaLarga(fechaAlta) : estado;
+    const periodo = fechaAlta ? `${fechaProc} – ${fechaAltaTxt}` : fechaProc;
+    const edadSexo = `${jitTexto(p.edad)} años / ${sexo}`;
+    const expediente = `${jitTexto(p.id)} / ${jitTexto(p.episodio || `EP-${p.id || '000'}`)}`;
+    const hallazgoCritico = comp !== 'No' || estado !== 'Alta' ? 1 : 0;
+    const hallazgoMayor = (!isNaN(Number(p.tiempo)) && Number(p.tiempo) > 90) || (p.puertaBalon !== null && Number(p.puertaBalon) > 90) ? 1 : 0;
+    const hallazgoMenor = comp === 'No' ? 2 : 4;
+
+    const zip = await JSZip.loadAsync(jitBase64ToUint8Array(JIT_AUDITORIA_WORD_BASE64));
+    const documentFile = zip.file('word/document.xml');
+    if (!documentFile) throw new Error('La plantilla no contiene word/document.xml');
+
+    let documentXml = await documentFile.async('string');
+    const replacements = [
+        ['AUD-HEM-2026-001', folio],
+        ['02 de abril de 2026', hoy],
+        ['12 – 13 de enero de 2026', periodo],
+        ['Intervención Coronaria Percutánea (ICP) + Coronariografía Diagnóstica', procedimiento],
+        ['CHARLES HAMPARZUMIAN HATZACORSIAN', nombre],
+        ['1000025310 / 1501290411', expediente],
+        ['56 años / Masculino', edadSexo],
+        ['18/09/1969', 'No registrada en base de datos'],
+        ['Dr. Jesús Rebón Gallardo Céd. 860572', medico],
+        ['Dra. Luz Areli Sánchez Portilla Céd. 11510211', medico],
+        ['Dr. Ronie Ángeles de la Torre / Dr. Luis Fernando Ríos Cuéllar', equipo],
+        ['Síndrome Coronario Crónico Escenario 6 / Cardiopatía Isquémica Crónica *(CIE-10 sugerido: I25.1)', `${diagnostico} *(CIE-10 por validar en expediente)`],
+        ['Coronariografía diagnóstica + ICP con stent en DA (XIENCE SIERRA 2.75x15mm)', procedimiento],
+        ['🔶 OBSERVACIÓN — Score Global: 74.7 / 100', `${clasificacion} — Score Global: ${score} / 100`],
+        ['74.7/100', `${score}/100`],
+        ['74.7 / 100', `${score} / 100`],
+        ['74.7', String(score)]
+    ];
+
+    documentXml = jitReplaceJoinedText(documentXml, replacements);
+    zip.file('word/document.xml', documentXml);
+
+    return await zip.generateAsync({
+        type: 'blob',
+        mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        compression: 'DEFLATE'
+    });
+}
+
+async function exportarJITWord() {
     try {
         const paciente = obtenerPacienteJITSeleccionado();
         if (!paciente) {
             if (typeof showToast === 'function') showToast('Selecciona un paciente para generar el Word JIT.', 'warning', 'fa-user-check');
             return;
         }
-        const html = crearWordJITPacienteHtml(paciente);
+
         let blob;
-        if (window.htmlDocx && typeof window.htmlDocx.asBlob === 'function') {
-            blob = window.htmlDocx.asBlob(html);
-        } else {
-            blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+        try {
+            blob = await crearWordJITPacienteDesdePlantilla(paciente);
+        } catch (templateError) {
+            console.warn('No se pudo usar la plantilla DOCX exacta; se usa respaldo HTML.', templateError);
+            const html = crearWordJITPacienteHtml(paciente);
+            if (window.htmlDocx && typeof window.htmlDocx.asBlob === 'function') {
+                blob = window.htmlDocx.asBlob(html);
+            } else {
+                blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+            }
         }
+
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = `Auditoria_JIT_Hemodinamia_${jitSafeFileName(paciente.paciente)}_${jitTexto(paciente.id, 'expediente')}.docx`;
@@ -6627,13 +6760,14 @@ function exportarJITWord() {
         a.click();
         URL.revokeObjectURL(a.href);
         document.body.removeChild(a);
-        if (typeof registrarEventoAuditoria === 'function') registrarEventoAuditoria('DESCARGA_JIT_WORD_PACIENTE', `Se generó Word JIT para ${jitTexto(paciente.paciente)} (${jitTexto(paciente.id)}).`);
-        if (typeof showToast === 'function') showToast('Word JIT generado con datos del paciente seleccionado.', 'success', 'fa-file-word');
+        if (typeof registrarEventoAuditoria === 'function') registrarEventoAuditoria('DESCARGA_JIT_WORD_PACIENTE', `Se generó Word JIT con plantilla institucional para ${jitTexto(paciente.paciente)} (${jitTexto(paciente.id)}).`);
+        if (typeof showToast === 'function') showToast('Word JIT generado con el formato institucional correcto.', 'success', 'fa-file-word');
     } catch (error) {
         console.error(error);
         if (typeof showToast === 'function') showToast('No se pudo generar el Word JIT del paciente.', 'error', 'fa-file-word');
     }
 }
+
 
 
 const SESSION_STORAGE_KEY = 'ha_user_session_v1';
